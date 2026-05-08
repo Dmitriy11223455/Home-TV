@@ -11,7 +11,7 @@
             var sources = [
                 {
                     name: 'Sweet TV',
-                    base_url: 'https://sweet-tv.net', // Исправлено на https
+                    base_url: 'https://sweet-tv.net',
                     regex: /(https?:\/\/[^"']+\.m3u8[^"']*)/i, 
                     channels: [
                         { title: 'Россия 1', path: '/rossia-1.html' },
@@ -31,24 +31,19 @@
 
             this.create = function () {
                 var _this = this;
-
                 sources.forEach(function (source) {
                     var head = $('<div class="category__title">' + source.name + '</div>');
                     html.append(head);
 
                     source.channels.forEach(function (channel) {
                         var card = Lampa.Template.get('button_item', {title: channel.title});
-                        
                         card.on('hover:enter', function () {
                             Lampa.Noty.show('Запрос к ' + source.name);
                             var fullUrl = source.base_url + channel.path;
-
                             network.native(fullUrl, function (response) {
                                 var found = response.match(source.regex);
                                 if (found) {
-                                    // Исправленная логика выбора ссылки
                                     var streamUrl = found[1] ? found[1] : found[0];
-                                    
                                     Lampa.Player.play({
                                         url: streamUrl.replace(/"/g, ''),
                                         title: channel.title
@@ -60,7 +55,6 @@
                                 Lampa.Noty.error('Сайт не отвечает');
                             }, false, {dataType: 'text'});
                         });
-                        
                         html.append(card);
                         items.push(card);
                     });
@@ -91,7 +85,7 @@
                     '</li>');
 
                 menu_item.on('hover:enter', function () {
-                    Lampa.Activity.push({ title: 'Каналы по сайтам', component: 'hybrid_plugin' });
+                    Lampa.Activity.push({ title: 'Каналы', component: 'hybrid_plugin' });
                 });
                 $('.menu .menu__list').append(menu_item);
             }
@@ -101,4 +95,3 @@
     if (window.appready) startPlugin();
     else Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') startPlugin(); });
 })();
-

@@ -11,13 +11,13 @@
             // --- НАСТРОЙКА КАНАЛОВ И САЙТОВ ---
             var sources = [
                 {
-                    name: 'Сайт А (Название)',
-                    base_url: 'https://site-a.com',
+                    name: 'sweet-tv',
+                    base_url: 'http://sweet-tv.net/',
                     // Регулярка для этого сайта
                     regex: /(https?:\/\/[^"']+\.m3u8[^"']*)/g, 
                     channels: [
-                        { title: 'Первый канал', path: '/page1.html' },
-                        { title: 'Россия 1', path: '/page2.html' }
+                        { title: 'Россия 1', path: '/rossia-1.html' },
+                        { title: 'НТВ', path: '/page2.html' }
                     ]
                 },
                 {

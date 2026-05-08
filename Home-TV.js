@@ -6,25 +6,22 @@
             var network = new Lampa.Reguest();
             var scroll = new Lampa.Scroll({mask:true, over:true});
             var items = [];
-            var html = $('<div></div>');
+            var html = $('<div class="category-full"></div>');
 
-            // --- НАСТРОЙКА КАНАЛОВ И САЙТОВ ---
             var sources = [
                 {
-                    name: 'sweet-tv',
-                    base_url: 'http://sweet-tv.net/',
-                    // Регулярка для этого сайта
-                    regex: /(https?:\/\/[^"']+\.m3u8[^"']*)/g, 
+                    name: 'Sweet TV',
+                    base_url: 'https://sweet-tv.net', // Исправлено на https
+                    regex: /(https?:\/\/[^"']+\.m3u8[^"']*)/i, 
                     channels: [
                         { title: 'Россия 1', path: '/rossia-1.html' },
                         { title: 'НТВ', path: '/page2.html' }
                     ]
                 },
                 {
-                    name: 'Сайт Б (Название)',
+                    name: 'Сайт Б',
                     base_url: 'https://site-b.net',
-                    // Регулярка для другого сайта (например, ищет в кавычках file:"...")
-                    regex: /file:"(.*?\.m3u8)"/, 
+                    regex: /file:"(.*?\.m3u8)"/i, 
                     channels: [
                         { title: 'ТНТ', path: '/tnt-online' },
                         { title: 'СТС', path: '/ctc-online' }
@@ -36,7 +33,6 @@
                 var _this = this;
 
                 sources.forEach(function (source) {
-                    // Добавляем заголовок сайта для красоты
                     var head = $('<div class="category__title">' + source.name + '</div>');
                     html.append(head);
 
@@ -45,13 +41,12 @@
                         
                         card.on('hover:enter', function () {
                             Lampa.Noty.show('Запрос к ' + source.name);
-
                             var fullUrl = source.base_url + channel.path;
 
                             network.native(fullUrl, function (response) {
                                 var found = response.match(source.regex);
                                 if (found) {
-                                    // Если в регулярке были скобки (), берем содержимое скобок [1], иначе [0]
+                                    // Исправленная логика выбора ссылки
                                     var streamUrl = found[1] ? found[1] : found[0];
                                     
                                     Lampa.Player.play({
@@ -59,10 +54,10 @@
                                         title: channel.title
                                     });
                                 } else {
-                                    Lampa.Noty.error('Ссылка на поток не найдена');
+                                    Lampa.Noty.error('Ссылка не найдена');
                                 }
                             }, function () {
-                                Lampa.Noty.error('Ошибка доступа к сайту');
+                                Lampa.Noty.error('Сайт не отвечает');
                             }, false, {dataType: 'text'});
                         });
                         
@@ -71,9 +66,10 @@
                     });
                 });
                 scroll.append(html);
-            }
+            };
 
-            this.render = function () { return scroll.render(); }
+            this.render = function () { return scroll.render(); };
+
             this.active = function () {
                 Lampa.Controller.add('content', {
                     toggle: function () {
@@ -84,10 +80,9 @@
                     back: function () { Lampa.Activity.backward(); }
                 });
                 Lampa.Controller.toggle('content');
-            }
+            };
         });
 
-        // Добавление в меню
         Lampa.Listener.follow('app', function (e) {
             if (e.type == 'ready') {
                 var menu_item = $('<li class="menu__item selector" data-action="hybrid">' +

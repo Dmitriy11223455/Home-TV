@@ -3,7 +3,7 @@
 
     function startPlugin() {
         Lampa.Component.add('hybrid_plugin', function (object, exam) {
-            var network = new Lampa.Request(); // Исправлено: Request вместо Reguest
+            var network = new Lampa.Request();
             var scroll = new Lampa.Scroll({mask:true, over:true});
             var items = [];
             var html = $('<div></div>');
@@ -31,7 +31,6 @@
 
             this.create = function () {
                 var _this = this;
-
                 sources.forEach(function (source) {
                     var head = $('<div class="category__title">' + source.name + '</div>');
                     html.append(head);
@@ -90,8 +89,9 @@
             }
         });
 
-        // Функция добавления в меню
         function addMenuItem() {
+            if ($('.menu .menu__list [data-action="hybrid"]').length) return;
+
             var menu_item = $('<li class="menu__item selector" data-action="hybrid">' +
                 '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14h-2v-4H8v-2h4V7h2v4h4v2h-4v4z"/></svg></div>' +
                 '<div class="menu__text">Гибрид ТВ</div>' +
@@ -104,12 +104,13 @@
             $('.menu .menu__list').append(menu_item);
         }
 
-        if ($('.menu').length) addMenuItem();
-        else {
-            Lampa.Listener.follow('app', function (e) {
-                if (e.type == 'ready') addMenuItem();
-            });
-        }
+        // Таймер для вставки в меню (решает проблему "невидимости")
+        var waitMenu = setInterval(function() {
+            if ($('.menu .menu__list').length) {
+                addMenuItem();
+                clearInterval(waitMenu);
+            }
+        }, 500);
     }
 
     if (window.appready) startPlugin();

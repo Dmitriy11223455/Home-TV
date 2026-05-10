@@ -18,18 +18,33 @@
                              '</div>');
                 
                 card.on('hover:enter', function () {
-                    Lampa.Noty.show('Поиск потока...');
+                    Lampa.Noty.show('Поиск потока через прокси...');
+                    
                     var network = new Lampa.Reguest();
-                    network.native('http://kulik.uz' + channel.url, function (response) {
+                    // Используем полный путь проксирования для обхода CORS
+                    var targetUrl = 'http://kulik.uz' + channel.url;
+
+                    network.native(targetUrl, function (response) {
                         var match = channel.regex.exec(response);
                         if (match) {
+                            // Берем первую группу захвата или всё совпадение
                             var stream = (match[1] || match[0]).replace(/["']/g, '').trim();
                             Lampa.Player.play({ url: stream, title: channel.title });
                         } else { 
-                            Lampa.Noty.show('Поток не найден в коде страницы'); 
+                            Lampa.Noty.show('Поток не найден в ответе'); 
                         }
                     }, function () { 
-                        Lampa.Noty.show('Ошибка сетевого запроса или прокси'); 
+                        // Если прокси Кулика лежит, пробуем нативный метод без прокси (для некоторых версий ТВ)
+                        Lampa.Noty.show('Ошибка прокси. Пробую прямой запрос...');
+                        
+                        network.native(channel.url, function(res){
+                             var m = channel.regex.exec(res);
+                             if(m) Lampa.Player.play({ url: m[1] || m[0], title: channel.title });
+                             else Lampa.Noty.show('Прямой запрос тоже не удался');
+                        }, function(){
+                             Lampa.Noty.show('Сетевой запрос полностью заблокирован');
+                        }, false, {dataType: 'text'});
+                        
                     }, false, {dataType: 'text'});
                 });
 
@@ -48,7 +63,7 @@
             Lampa.Controller.add('content', {
                 toggle: function () {
                     Lampa.Controller.collectionSet(html);
-                    Lampa.Controller.collectionFocus(items[0], html);
+                    Lampa.Controller.collectionFocus(items, html);
                 },
                 up: function () { Lampa.Controller.toggle('head'); },
                 back: function () { Lampa.Activity.backward(); }
@@ -81,3 +96,4 @@
 
     setInterval(injectMenu, 2000);
 })();
+

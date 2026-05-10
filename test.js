@@ -16,11 +16,10 @@
         var scroll = new Lampa.Scroll({mask: true, over: true});
         var html = $('<div class="home-tv-list"></div>');
         
-        // Сюда вставляй ссылки на СТРАНИЦЫ с каналами
         var channels = [
-            { title: 'Первый канал Европа', url: 'https://berezka.live', desc: 'Авто-поиск потока m3u8...' },
-            { title: 'ТНТ', url: 'https://berezka.live', desc: 'Авто-поиск потока m3u8...' },
-            { title: 'Кино ТВ', url: 'http://oneliketv.net', desc: 'Авто-поиск потока m3u8...' }
+            { title: 'Первый канал Европа', url: 'https://berezka.live' },
+            { title: 'ТНТ', url: 'https://berezka.live' },
+            { title: 'Кино ТВ', url: 'http://oneliketv.net' }
         ];
 
         this.create = function () {
@@ -30,34 +29,31 @@
             channels.forEach(function (channel) {
                 var card = $('<div class="home-tv-card selector">' +
                     '<div class="home-tv-card__title">' + channel.title + '</div>' +
-                    '<div class="home-tv-card__desc">' + channel.desc + '</div>' +
+                    '<div class="home-tv-card__desc">Нажмите для поиска потока m3u8...</div>' +
                 '</div>');
 
                 card.on('hover:enter', function () {
-                    Lampa.Noty.show('Сканирую сеть (F12 mode)...');
+                    Lampa.Noty.show('Ищу ссылку на видео...');
                     
-                    // Используем мощный CORS прокси для доступа к коду сайта
                     $.ajax({
-                        url: 'https://allorigins.win' + encodeURIComponent(channel.url),
+                        url: 'https://corsproxy.io?' + encodeURIComponent(channel.url),
                         method: 'GET',
-                        dataType: 'json',
-                        success: function(response) {
-                            var content = response.contents;
+                        success: function(data) {
+                            // Имитация F12: ищем строку m3u8 в коде страницы
+                            var match = data.match(/https?:[^"']+\.m3u8[^"']*/);
                             
-                            // Регулярка ищет любую ссылку, заканчивающуюся на .m3u8
-                            // Это программный аналог поиска в закладке Network
-                            var match = content.match(/https?:\/\/[^"']+\.m3u8[^"']*/);
-                            
-                            if (match && match[0]) {
-                                var streamUrl = match[0].replace(/\\/g, ''); // Чистим от лишних слешей
-                                Lampa.Noty.show('Поток найден!');
+                            if (match) {
+                                // Очищаем ссылку (убираем \ если есть)
+                                var streamUrl = match[0].replace(/\\/g, '');
+                                Lampa.Noty.show('Поток найден и запущен');
                                 Lampa.Player.play({ url: streamUrl, title: channel.title });
                             } else {
-                                Lampa.Noty.show('В коде страницы нет .m3u8');
+                                Lampa.Noty.show('Ссылка m3u8 не найдена в коде');
+                                console.log('Parsed content:', data); // Для отладки в консоли
                             }
                         },
                         error: function() {
-                            Lampa.Noty.show('Сайт заблокировал запрос');
+                            Lampa.Noty.show('Сайт заблокировал доступ или прокси недоступен');
                         }
                     });
                 });

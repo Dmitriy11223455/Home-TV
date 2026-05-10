@@ -22,7 +22,7 @@
         var channels = [
             { title: 'Первый канал', url: 'https://githubusercontent.com' },
             { title: 'ТНТ', url: 'https://githubusercontent.com' },
-            { title: 'Россия 1', url: 'https://githubusercontent.com' },
+            { title: 'Россия 1', url: 'https://raw.githubusercontent.com/smolnp/IPTVru/refs/heads/gh-pages/IPTVmir.m3u8' },
             { title: 'Кинохит', url: 'https://githubusercontent.com' }
         ];
 

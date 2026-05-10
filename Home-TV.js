@@ -4,7 +4,7 @@
     Lampa.Component.add('home_tv_plugin', function (object, exam) {
         var scroll = new Lampa.Scroll({mask: true, over: true});
         var items = [];
-        var html = $('<div class="category-full"></div>');
+        var html = $('<div class="iptv-channels"></div>'); // Сетка как у Kulik TV
 
         this.create = function () {
             var my_channels = [
@@ -12,15 +12,18 @@
                 { title: 'ТНТ', url: 'https://site-b.net', regex: /file:"(.*?\.m3u8)"/i }
             ];
 
-            my_channels.forEach(function (channel) {
-                // Добавляем класс 'selector', чтобы Lampa понимала, что это активный элемент для пульта
-                var card = $('<div class="menu__item selector" style="display: block; width: 100%; margin-bottom: 10px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px;">' +
-                                '<div class="menu__text" style="font-size: 1.5em; text-align: center;">' + channel.title + '</div>' +
+            my_channels.forEach(function (channel, index) {
+                // Стиль карточки полностью скопирован с Kulik TV
+                var card = $('<div class="iptv-channel selector layer--visible">' +
+                                '<div class="iptv-channel__body">' +
+                                    '<div class="iptv-channel__simb">' + channel.title.substring(0,1).toUpperCase() + '</div>' +
+                                    '<div class="iptv-channel__name">' + channel.title + '</div>' +
+                                '</div>' +
+                                '<div class="iptv-channel__chn">' + (index + 1).toString().padStart(3, '0') + '</div>' +
                              '</div>');
                 
                 card.on('hover:enter', function () {
                     Lampa.Noty.show('Пробиваем блокировку...');
-                    
                     var network = new Lampa.Reguest();
                     var targetUrl = 'http://cub.watch' + channel.url;
 
@@ -29,25 +32,21 @@
                         if (match) {
                             var stream = (match[1] || match[0]).replace(/["']/g, '').trim();
                             Lampa.Player.play({ url: stream, title: channel.title });
-                        } else { 
-                            Lampa.Noty.show('Сайт ответил, но поток спрятан'); 
-                        }
+                        } else { Lampa.Noty.show('Поток не найден'); }
                     }, function () { 
                         var altUrl = 'https://corsproxy.io' + encodeURIComponent(channel.url);
                         network.native(altUrl, function(res){
                              var m = channel.regex.exec(res);
-                             if(m) {
-                                 var s = (m[1] || m[0]).replace(/["']/g, '').trim();
-                                 Lampa.Player.play({ url: s, title: channel.title });
-                             } else Lampa.Noty.show('Не удалось извлечь ссылку');
+                             if(m) Lampa.Player.play({ url: (m[1] || m[0]).replace(/["']/g, '').trim(), title: channel.title });
+                             else Lampa.Noty.show('Ошибка запроса');
                         }, function(){
-                             Lampa.Noty.show('Браузер блокирует все попытки запроса');
+                             Lampa.Noty.show('Блокировка браузера');
                         }, false, {dataType: 'text'});
                     }, false, {dataType: 'text'});
                 });
 
                 html.append(card);
-                items.push(card[0]); // Сохраняем чистый DOM-элемент для контроллера
+                items.push(card);
             });
 
             scroll.append(html);
@@ -56,22 +55,15 @@
         this.render = function () { return scroll.render(); };
 
         this.active = function () {
-            // УПРАВЛЕНИЕ ПУЛЬТОМ
+            // АДАПТАЦИЯ ПОД ПУЛЬТ
             Lampa.Controller.add('content', {
                 toggle: function () {
-                    Lampa.Controller.collectionSet(html); 
-                    // Ставим фокус на первый элемент списка
-                    Lampa.Controller.collectionFocus(items.length > 0 ? items[0] : false, html);
+                    Lampa.Controller.collectionSet(html);
+                    // Передаем весь массив элементов для корректной навигации
+                    Lampa.Controller.collectionFocus(items[0], html); 
                 },
-                up: function () { 
-                    Lampa.Controller.toggle('head'); // Переход в шапку (поиск, настройки)
-                },
-                down: function () {
-                    // Если элементов много, Lampa сама прокрутит scroll
-                },
-                back: function () { 
-                    Lampa.Activity.backward(); // Назад при нажатии Back
-                }
+                up: function () { Lampa.Controller.toggle('head'); },
+                back: function () { Lampa.Activity.backward(); }
             });
             Lampa.Controller.toggle('content');
         };

@@ -1,21 +1,24 @@
 (function () {
     'use strict';
 
-    // 1. Убрали тяжелые стили сетки, оставили только минимальное оформление кнопок
-    $('<style>' +
-        '.home-tv-list { padding: 20px; }' +
-        '.home-tv-card { margin-bottom: 10px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; display: flex; flex-direction: column; cursor: pointer; }' +
-        '.home-tv-card.focus { background: #f39c12; color: #000; transform: scale(1.02); }' +
-        '.home-tv-card__title { font-size: 1.4em; font-weight: bold; }' +
-        '.home-tv-card__desc { font-size: 0.9em; opacity: 0.7; margin-top: 5px; }' +
-    '</style>').appendTo('body');
+    // 1. Стили (только самое необходимое)
+    if (!$('#home-tv-styles').length) {
+        $('<style id="home-tv-styles">' +
+            '.home-tv-list { padding: 20px; }' +
+            '.home-tv-card { margin-bottom: 10px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; cursor: pointer; }' +
+            '.home-tv-card.focus { background: #f39c12; color: #000; }' +
+            '.home-tv-card__title { font-size: 1.4em; font-weight: bold; }' +
+            '.home-tv-card__desc { font-size: 0.9em; opacity: 0.7; margin-top: 5px; }' +
+        '</style>').appendTo('body');
+    }
 
+    // 2. Компонент плагина
     Lampa.Component.add('home_tv_plugin', function (object, exam) {
         var _this = this;
         var scroll = new Lampa.Scroll({mask: true, over: true});
         var html = $('<div class="home-tv-list"></div>');
         
-        // Ваши данные из кода
+        // Список каналов (без дублей)
         var channels = [
             { title: 'Первый канал', url: 'https://berezka.live', desc: 'Главный эфир страны. Актуальные новости и шоу.' },
             { title: 'ТНТ', url: 'https://site-b.net', desc: 'Развлекательный контент, сериалы и юмор.' },
@@ -24,7 +27,8 @@
 
         this.create = function () {
             var inner = $('<div></div>');
-            
+            html.empty(); // Очистка перед созданием, чтобы не было дублей
+
             channels.forEach(function (channel) {
                 var card = $('<div class="home-tv-card selector">' +
                     '<div class="home-tv-card__title">' + channel.title + '</div>' +
@@ -61,8 +65,9 @@
         this.create();
     });
 
-    // 2. Метод добавления в ЛЕВОЕ МЕНЮ (остается без изменений)
+    // 3. Добавление в меню с защитой от повторов
     function addPlugin() {
+        // Если кнопка уже есть, ничего не делаем
         if ($('.menu__item[data-action="home_tv"]').length > 0) return;
 
         var menu_item = $('<li class="menu__item selector" data-action="home_tv">' +
@@ -86,17 +91,16 @@
         }
     }
 
-    if (window.appready) addPlugin();
-    else {
-        Lampa.Listener.follow('app', function (e) {
-            if (e.type == 'ready') addPlugin();
-        });
-    }
+    // Запуск (только один раз через Listener или таймер)
+    Lampa.Listener.follow('app', function (e) {
+        if (e.type == 'ready') addPlugin();
+    });
 
-    var interval = setInterval(function() {
+    // Резервный таймер на случай медленной загрузки (остановится сам)
+    var waitMenu = setInterval(function() {
         addPlugin();
-        if ($('.menu__item[data-action="home_tv"]').length > 0) clearInterval(interval);
-    }, 2000);
+        if ($('.menu__item[data-action="home_tv"]').length > 0) clearInterval(waitMenu);
+    }, 1000);
 
 })();
 

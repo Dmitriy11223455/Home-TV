@@ -18,33 +18,32 @@
                              '</div>');
                 
                 card.on('hover:enter', function () {
-                    Lampa.Noty.show('Поиск потока через прокси...');
+                    Lampa.Noty.show('Пробиваем блокировку...');
                     
                     var network = new Lampa.Reguest();
-                    // Используем полный путь проксирования для обхода CORS
-                    var targetUrl = 'http://kulik.uz' + channel.url;
+                    // Используем универсальный прокси через замену протокола, как делает оригинальный плагин
+                    var targetUrl = 'http://cub.watch' + channel.url;
 
                     network.native(targetUrl, function (response) {
                         var match = channel.regex.exec(response);
                         if (match) {
-                            // Берем первую группу захвата или всё совпадение
                             var stream = (match[1] || match[0]).replace(/["']/g, '').trim();
                             Lampa.Player.play({ url: stream, title: channel.title });
                         } else { 
-                            Lampa.Noty.show('Поток не найден в ответе'); 
+                            Lampa.Noty.show('Сайт ответил, но поток спрятан'); 
                         }
                     }, function () { 
-                        // Если прокси Кулика лежит, пробуем нативный метод без прокси (для некоторых версий ТВ)
-                        Lampa.Noty.show('Ошибка прокси. Пробую прямой запрос...');
-                        
-                        network.native(channel.url, function(res){
+                        // Последняя попытка через альтернативный прокси
+                        var altUrl = 'https://corsproxy.io?' + encodeURIComponent(channel.url);
+                        network.native(altUrl, function(res){
                              var m = channel.regex.exec(res);
-                             if(m) Lampa.Player.play({ url: m[1] || m[0], title: channel.title });
-                             else Lampa.Noty.show('Прямой запрос тоже не удался');
+                             if(m) {
+                                 var s = (m[1] || m[0]).replace(/["']/g, '').trim();
+                                 Lampa.Player.play({ url: s, title: channel.title });
+                             } else Lampa.Noty.show('Не удалось извлечь ссылку');
                         }, function(){
-                             Lampa.Noty.show('Сетевой запрос полностью заблокирован');
+                             Lampa.Noty.show('Браузер блокирует все попытки запроса');
                         }, false, {dataType: 'text'});
-                        
                     }, false, {dataType: 'text'});
                 });
 
@@ -55,9 +54,7 @@
             scroll.append(html);
         };
 
-        this.render = function () {
-            return scroll.render();
-        };
+        this.render = function () { return scroll.render(); };
 
         this.active = function () {
             Lampa.Controller.add('content', {
@@ -96,4 +93,5 @@
 
     setInterval(injectMenu, 2000);
 })();
+
 

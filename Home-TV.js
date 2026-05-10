@@ -10,7 +10,7 @@
 
             this.create = function () {
                 var my_channels = [
-                    { title: 'Первый канал', url: 'https://site-a.com', regex: /(https?:\/\/[^"']+\.m3u8[^"']*)/i },
+                    { title: 'Первый канал', url: 'https://berezka.live/berezka-tv/pervyi-kanal.html', regex: /(https?:\/\/[^"']+\.m3u8[^"']*)/i },
                     { title: 'ТНТ', url: 'https://site-b.net', regex: /file:"(.*?\.m3u8)"/i }
                 ];
 

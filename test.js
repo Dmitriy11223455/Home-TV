@@ -1,7 +1,6 @@
 (function () {
     'use strict';
 
-    // 1. Стили (только самое необходимое)
     if (!$('#home-tv-styles').length) {
         $('<style id="home-tv-styles">' +
             '.home-tv-list { padding: 20px; }' +
@@ -12,22 +11,21 @@
         '</style>').appendTo('body');
     }
 
-    // 2. Компонент плагина
     Lampa.Component.add('home_tv_plugin', function (object, exam) {
         var _this = this;
         var scroll = new Lampa.Scroll({mask: true, over: true});
         var html = $('<div class="home-tv-list"></div>');
         
-        // Список каналов (без дублей)
+        // Сюда вставляй ссылки на СТРАНИЦЫ с каналами
         var channels = [
-            { title: 'Первый канал Европа', url: 'https://berezka.live/berezka-tv/pervyi-kanal.html', desc: 'Главный эфир страны. Актуальные новости и шоу.' },
-            { title: 'ТНТ', url: 'https://berezka.live/berezka-tv/tnt.html', desc: 'Развлекательный контент, сериалы и юмор.' },
-            { title: 'Кино ТВ', url: 'http://oneliketv.net/kino-tv.html', desc: 'Лучшие фильмы мирового кинематографа.' }
+            { title: 'Первый канал Европа', url: 'https://berezka.live', desc: 'Авто-поиск потока m3u8...' },
+            { title: 'ТНТ', url: 'https://berezka.live', desc: 'Авто-поиск потока m3u8...' },
+            { title: 'Кино ТВ', url: 'http://oneliketv.net', desc: 'Авто-поиск потока m3u8...' }
         ];
 
         this.create = function () {
             var inner = $('<div></div>');
-            html.empty(); // Очистка перед созданием, чтобы не было дублей
+            html.empty();
 
             channels.forEach(function (channel) {
                 var card = $('<div class="home-tv-card selector">' +
@@ -36,7 +34,32 @@
                 '</div>');
 
                 card.on('hover:enter', function () {
-                    Lampa.Player.play({ url: channel.url, title: channel.title });
+                    Lampa.Noty.show('Сканирую сеть (F12 mode)...');
+                    
+                    // Используем мощный CORS прокси для доступа к коду сайта
+                    $.ajax({
+                        url: 'https://allorigins.win' + encodeURIComponent(channel.url),
+                        method: 'GET',
+                        dataType: 'json',
+                        success: function(response) {
+                            var content = response.contents;
+                            
+                            // Регулярка ищет любую ссылку, заканчивающуюся на .m3u8
+                            // Это программный аналог поиска в закладке Network
+                            var match = content.match(/https?:\/\/[^"']+\.m3u8[^"']*/);
+                            
+                            if (match && match[0]) {
+                                var streamUrl = match[0].replace(/\\/g, ''); // Чистим от лишних слешей
+                                Lampa.Noty.show('Поток найден!');
+                                Lampa.Player.play({ url: streamUrl, title: channel.title });
+                            } else {
+                                Lampa.Noty.show('В коде страницы нет .m3u8');
+                            }
+                        },
+                        error: function() {
+                            Lampa.Noty.show('Сайт заблокировал запрос');
+                        }
+                    });
                 });
 
                 inner.append(card);
@@ -65,24 +88,15 @@
         this.create();
     });
 
-    // 3. Добавление в меню с защитой от повторов
     function addPlugin() {
-        // Если кнопка уже есть, ничего не делаем
         if ($('.menu__item[data-action="home_tv"]').length > 0) return;
-
         var menu_item = $('<li class="menu__item selector" data-action="home_tv">' +
             '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="#f39c12"/></svg></div>' +
             '<div class="menu__text">HOME TV</div>' +
             '</li>');
-
         menu_item.on('hover:enter click', function () {
-            Lampa.Activity.push({
-                title: 'HOME TV',
-                component: 'home_tv_plugin',
-                page: 1
-            });
+            Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin', page: 1 });
         });
-
         var list = $('.menu .menu__list');
         if (list.length) {
             var settings = list.find('[data-action="settings"]').closest('li');
@@ -91,16 +105,14 @@
         }
     }
 
-    // Запуск (только один раз через Listener или таймер)
     Lampa.Listener.follow('app', function (e) {
         if (e.type == 'ready') addPlugin();
     });
 
-    // Резервный таймер на случай медленной загрузки (остановится сам)
     var waitMenu = setInterval(function() {
         addPlugin();
         if ($('.menu__item[data-action="home_tv"]').length > 0) clearInterval(waitMenu);
     }, 1000);
-
 })();
+
 

@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    // 1. Стили интерфейса (Твой интерфейс: список, меню, инфо)
+    // 1. Стили интерфейса (Внутренний вид плагина)
     $('<style>' +
         '.home-tv { display: flex; width: 100%; height: 100%; padding: 1.5% 2%; box-sizing: border-box; background: #000; }' +
         '.home-tv__menu { width: 20%; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 20px; }' +
@@ -15,7 +15,7 @@
         '.home-tv-menu__item.focus { opacity: 1; color: #f39c12; }' +
     '</style>').appendTo('body');
 
-    // 2. Главный компонент (Твой внутренний интерфейс)
+    // 2. Внутренний интерфейс плагина
     Lampa.Component.add('home_tv_plugin', function (object, exam) {
         var _this = this;
         var scroll = new Lampa.Scroll({ mask: true, over: true });
@@ -26,14 +26,14 @@
         var info = $('<div class="home-tv__info"></div>');
 
         this.create = function () {
-            // Категории
-            ['Все каналы', 'Основные', 'Кино'].forEach(function (cat) {
+            // Отрисовка левого меню
+            ['Все каналы', 'Основные', 'Кино', 'Спорт'].forEach(function (cat) {
                 menu.append('<div class="home-tv-menu__item">' + cat + '</div>');
             });
 
-            // Данные каналов
+            // Данные ваших каналов
             var my_channels = [
-                { title: 'Первый канал', url: 'https://berezka.live', desc: 'Главный эфир страны. Актуальные новости и лучшие шоу.' },
+                { title: 'Первый канал', url: 'https://berezka.live', desc: 'Главный эфир страны. Актуальные новости.' },
                 { title: 'ТНТ', url: 'https://site-b.net', desc: 'Развлекательный телеканал. Сериалы и юмор.' }
             ];
 
@@ -43,14 +43,15 @@
                     '<div class="home-tv-item__name">' + channel.title + '</div>' +
                     '</div>');
 
+                // Что делать при наведении (фокусе)
                 card.on('hover:focus', function () {
                     info.html('<div class="home-tv-info__title">' + channel.title + '</div>' +
                         '<div class="home-tv-info__desc" style="font-size:1.3em; opacity:0.6">' + channel.desc + '</div>');
                     scroll.scrollTo(card);
                 });
 
+                // Что делать при нажатии OK
                 card.on('hover:enter', function () {
-                    Lampa.Noty.show('Запуск потока...');
                     Lampa.Player.play({ url: channel.url, title: channel.title });
                 });
 
@@ -80,7 +81,7 @@
         this.create();
     });
 
-    // 3. Инъекция в меню Lampa (Логика Gamini — надежная вставка)
+    // 3. Отображение в боковом меню Lampa (Твоя логика)
     function injectMenu() {
         if ($('li[data-action="home_tv"]').length > 0) return;
         
@@ -92,16 +93,27 @@
                 '</li>');
 
             item.on('hover:enter click', function () {
-                $('body').removeClass('menu--open');
-                Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin' });
+                $('body').removeClass('menu--open'); // Закрываем шторку
+                Lampa.Activity.push({ 
+                    title: 'HOME TV', 
+                    component: 'home_tv_plugin' 
+                });
             });
 
-            // Вставка перед настройками
+            // Вставляем перед пунктом "Настройки"
             var set = menu_list.find('[data-action="settings"]');
-            if (set.length > 0) set.before(item); 
-            else menu_list.append(item);
+            if (set.length > 0) {
+                set.before(item);
+            } else {
+                menu_list.append(item);
+            }
         }
     }
+
+    // Регулярная проверка на появление меню (для надежности на ТВ)
+    setInterval(injectMenu, 2000);
+
+})();
 
     // Запуск через интервал для надежности (как в твоем примере)
     setInterval(injectMenu, 2000);

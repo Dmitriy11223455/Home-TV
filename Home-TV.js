@@ -2,7 +2,6 @@
     'use strict';
 
     function startPlugin() {
-        // 1. КОМПОНЕНТ С КАНАЛАМИ
         Lampa.Component.add('home_tv_plugin', function (object, exam) {
             var scroll = new Lampa.Scroll({mask: true, over: true});
             var items = [];
@@ -10,7 +9,7 @@
 
             this.create = function () {
                 var my_channels = [
-                    { title: 'Первый канал', url: 'https://berezka.live/berezka-tv/pervyi-kanal.html', regex: /(https?:\/\/[^"']+\.m3u8[^"']*)/i },
+                    { title: 'Первый канал', url: 'https://berezka.live', regex: /(https?:\/\/[^"']+\.m3u8[^"']*)/i },
                     { title: 'ТНТ', url: 'https://site-b.net', regex: /file:"(.*?\.m3u8)"/i }
                 ];
 
@@ -19,7 +18,6 @@
                     card.on('hover:enter', function () {
                         Lampa.Noty.show('Поиск потока...');
                         
-                        // Создаем запрос только при клике
                         var network = new Lampa.Reguest();
                         var proxiedUrl = 'http://kulik.uz' + channel.url;
 
@@ -32,16 +30,24 @@
                             } else { Lampa.Noty.error('Не найдено'); }
                         }, function () { Lampa.Noty.error('Ошибка прокси'); }, false, {dataType: 'text'});
                     });
+                    
                     html.append(card);
-                    items.push(card);
+                    items.push(card); // Добавляем карточку в массив для контроллера
                 });
+                
                 scroll.append(html);
+                return html; // Обязательно возвращаем результат
             };
 
             this.render = function () { return scroll.render(); };
+
             this.active = function () {
                 Lampa.Controller.add('content', {
-                    toggle: function () { Lampa.Controller.collectionSet(items, html); Lampa.Controller.navigate('content'); },
+                    toggle: function () { 
+                        // ИСПРАВЛЕНО: Правильная передача элементов в коллекцию
+                        Lampa.Controller.collectionSet(html); 
+                        Lampa.Controller.collectionFocus(items[0], html); 
+                    },
                     up: function () { Lampa.Controller.toggle('head'); },
                     back: function () { Lampa.Activity.backward(); }
                 });
@@ -49,11 +55,8 @@
             };
         });
 
-        // 2. НЕУБИВАЕМАЯ ОТРИСОВКА В МЕНЮ (ДЛЯ LAMPA UV)
         function injectMenu() {
-            // Если кнопка уже на месте — ничего не делаем
             if ($('li[data-action="home_tv"]').length > 0) return;
-
             var menu = $('.menu__list, .menu__items, .menu .list');
             if (menu.length > 0) {
                 var item = $('<li class="menu__item selector" data-action="home_tv">' +
@@ -62,29 +65,20 @@
                     '</li>');
 
                 item.on('hover:enter click', function () {
-                    // Закрываем меню (важно для мобильных и UV версий)
                     $('body').removeClass('menu--open');
                     Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin' });
                 });
 
-                // Вставляем перед "Настройками"
                 var settings = menu.find('[data-action="settings"]');
                 if (settings.length > 0) settings.before(item);
                 else menu.append(item);
-
-                // Обновляем контроллер пульта
-                if (window.Lampa && Lampa.Controller && Lampa.Controller.update) {
-                    Lampa.Controller.update();
-                }
             }
         }
 
-        // ПРОВЕРЯЕМ НАЛИЧИЕ КНОПКИ КАЖДУЮ СЕКУНДУ
         setInterval(injectMenu, 1000);
         injectMenu();
     }
 
-    // Ожидание готовности приложения
     if (window.appready) startPlugin();
     else Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') startPlugin(); });
 })();

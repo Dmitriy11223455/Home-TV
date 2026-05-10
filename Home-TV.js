@@ -8,7 +8,7 @@
         Lampa.Component.add('home_tv_plugin', function (object, exam) {
             var scroll = new Lampa.Scroll({mask: true, over: true});
             var items = [];
-            var html = $('<div></div>');
+            var html = $('<div class="category-full"></div>');
 
             this.create = function () {
                 var my_channels = [
@@ -47,27 +47,35 @@
             };
         });
 
-        // 2. ОТРИСОВКА В МЕНЮ (КАК У КУЛИКА)
+        // 2. ДОБАВЛЕНИЕ В МЕНЮ ЧЕРЕЗ API LAMPA
         function addMenuItem() {
-            if ($('.menu__list [data-action="home_tv"]').length) return;
+            var menu_item = {
+                id: 'home_tv',
+                title: 'HOME TV',
+                icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="white"/></svg>',
+                onSelect: function () {
+                    Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin' });
+                }
+            };
 
-            var item = $('<li class="menu__item selector" data-action="home_tv">' +
-                '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="white"/></svg></div>' +
-                '<div class="menu__text">HOME TV</div>' +
-                '</li>');
-
-            item.on('hover:enter', function () {
-                Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin' });
-            });
-
-            var settings = $('.menu__list [data-action="settings"]');
-            if (settings.length) settings.before(item);
-            else $('.menu__list').append(item);
+            // Проверяем наличие метода и добавляем перед пунктом "Настройки"
+            if (Lampa.Menu.add) {
+                Lampa.Menu.add(menu_item); 
+            } else {
+                // Запасной вариант для очень старых версий
+                var item = $('<li class="menu__item selector" data-action="home_tv"><div class="menu__ico">' + menu_item.icon + '</div><div class="menu__text">' + menu_item.title + '</div></li>');
+                item.on('hover:enter', menu_item.onSelect);
+                $('.menu__list').append(item);
+            }
         }
 
-        setInterval(addMenuItem, 2000); // Постоянная проверка меню
+        addMenuItem();
         Lampa.Noty.show('HOME TV загружен!');
     }
+
+    if (window.appready) startPlugin();
+    else Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') startPlugin(); });
+})();
 
     if (window.appready) startPlugin();
     else Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') startPlugin(); });

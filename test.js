@@ -32,7 +32,7 @@
             Lampa.Controller.add('htv_view', {
                 toggle: function () {
                     Lampa.Controller.collectionSet(html);
-                    Lampa.Controller.collectionFocus(html.find('.selector')[0], html);
+                    Lampa.Controller.collectionFocus(html.find('.selector'), html);
                 },
                 back: function () { Lampa.Activity.backward(); }
             });
@@ -51,7 +51,7 @@
             items = [],
             html = $('<div class="home-tv">' +
                 '<div class="home-tv__head"><div class="home-tv__source">Источник: Березка ТВ</div><div class="home-tv__categories"></div></div>' +
-                '<div class="home-tv__body"><div class="home-tv__list"></div><div class="home-tv__info">Выбирите канал</div></div>' +
+                '<div class="home-tv__body"><div class="home-tv__list"></div><div class="home-tv__info">Выберите канал</div></div>' +
             '</div>');
 
         this.create = function () {
@@ -94,7 +94,7 @@
             Lampa.Controller.add('home_tv_main', {
                 toggle: function () {
                     Lampa.Controller.collectionSet(html);
-                    if (items.length) Lampa.Controller.collectionFocus(items[0][0], html);
+                    if (items.length) Lampa.Controller.collectionFocus(items[0], html);
                 },
                 up: function () { Lampa.Controller.move('up'); },
                 down: function () { Lampa.Controller.move('down'); },
@@ -108,25 +108,51 @@
         this.create();
     });
 
-    // 4. Инъекция в меню
-    function inject() {
+    // 4. Добавление в левое меню Lampa
+    function injectMenu() {
+        // Проверка, чтобы не добавлять дубликаты
         if ($('li[data-action="home_tv"]').length > 0) return;
-        var menu = $('.menu__list');
-        if (menu.length) {
-            var el = $('<li class="menu__item selector" data-action="home_tv">' +
-                '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="2" y="7" width="20" height="13" rx="2"/><path d="M17 2l-5 5-5-5"/></svg></div>' +
+
+        // Поиск контейнера меню
+        var menu_list = $('.menu__list, .menu__items, .menu .list');
+        
+        if (menu_list.length > 0) {
+            var item = $('<li class="menu__item selector" data-action="home_tv">' +
+                '<div class="menu__ico">' +
+                    '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org">' +
+                        '<path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="white"/>' +
+                    '</svg>' +
+                '</div>' +
                 '<div class="menu__text">HOME TV</div>' +
             '</li>');
-            el.on('hover:enter click', function () {
-                $('body').removeClass('menu--open');
-                Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin' });
+
+            // Обработка перехода
+            item.on('hover:enter click', function () {
+                $('body').removeClass('menu--open'); // Закрываем меню
+                Lampa.Activity.push({ 
+                    title: 'HOME TV', 
+                    component: 'home_tv_plugin',
+                    page: 1 
+                });
             });
-            var set = menu.find('[data-action="settings"]');
-            if (set.length) set.before(el); else menu.append(el);
+
+            // Вставляем перед пунктом "Настройки", если он есть, иначе в конец
+            var settings_item = menu_list.find('[data-action="settings"]');
+            if (settings_item.length > 0) {
+                settings_item.before(item);
+            } else {
+                menu_list.append(item);
+            }
         }
     }
 
-    if (window.appready) inject();
-    else Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') inject(); });
+    // Запуск инъекции при готовности приложения
+    if (window.appready) injectMenu();
+    else {
+        Lampa.Listener.follow('app', function (e) {
+            if (e.type == 'ready') injectMenu();
+        });
+    }
+
 })();
 

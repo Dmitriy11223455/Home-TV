@@ -47,30 +47,48 @@
             };
         });
 
-        // 2. ФУНКЦИЯ ДОБАВЛЕНИЯ В МЕНЮ
-        function addMenuItem() {
-            // Если пункт уже есть в DOM или в массиве меню, выходим
-            if ($('div[data-action="home_tv"]').length > 0) return;
-            
-            if (typeof Lampa.Menu !== 'undefined' && Lampa.Menu.add) {
-                Lampa.Menu.add({
-                    id: 'home_tv',
-                    title: 'HOME TV',
-                    icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="currentColor"/></svg>',
-                    onSelect: function () {
-                        Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin' });
-                    }
+        // 2. НАСИЛЬНАЯ ОТРИСОВКА В МЕНЮ
+        function injectMenu() {
+            // Если пункт уже есть в меню, ничего не делаем
+            if ($('.menu__list [data-action="home_tv"]').length > 0) return;
+
+            var menu = $('.menu__list');
+            if (menu.length > 0) {
+                var item = $('<li class="menu__item selector" data-action="home_tv">' +
+                    '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="white"/></svg></div>' +
+                    '<div class="menu__text">HOME TV</div>' +
+                    '</li>');
+
+                item.on('hover:enter', function () {
+                    Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin' });
                 });
-            } else {
-                // Если меню еще не прогрузилось, пробуем снова через короткое время
-                setTimeout(addMenuItem, 100);
+
+                // Вставляем перед настройками или просто в конец
+                var settings = menu.find('[data-action="settings"]');
+                if (settings.length > 0) settings.before(item);
+                else menu.append(item);
+
+                // Сообщаем контроллеру Лампы, что список обновился (для фокуса пультом)
+                if (window.Lampa.Controller && Lampa.Controller.update) {
+                    Lampa.Controller.update();
+                }
             }
         }
 
-        addMenuItem();
+        // Запуск через интервал (брутфорс)
+        setInterval(injectMenu, 1000);
+
+        // Слежка за DOM (моментальная реакция на перерисовку меню Лампой)
+        var observer = new MutationObserver(function() {
+            injectMenu();
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        injectMenu(); 
+        Lampa.Noty.show('HOME TV готов!');
     }
 
-    // Запуск плагина
     if (window.appready) startPlugin();
     else Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') startPlugin(); });
 })();
+

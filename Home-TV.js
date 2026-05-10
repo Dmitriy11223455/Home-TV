@@ -13,32 +13,41 @@
             ];
 
             my_channels.forEach(function (channel) {
+                // Добавляем класс 'selector', чтобы Lampa понимала, что это активный элемент для пульта
                 var card = $('<div class="menu__item selector" style="display: block; width: 100%; margin-bottom: 10px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px;">' +
                                 '<div class="menu__text" style="font-size: 1.5em; text-align: center;">' + channel.title + '</div>' +
                              '</div>');
                 
                 card.on('hover:enter', function () {
-                    Lampa.Noty.show('Обход блокировок браузера...');
+                    Lampa.Noty.show('Пробиваем блокировку...');
                     
-                    // ИСПОЛЬЗУЕМ СИСТЕМНЫЙ ПРОКСИ LAMPA
                     var network = new Lampa.Reguest();
-                    var url = Lampa.Utils.proxyAction(channel.url); 
+                    var targetUrl = 'http://cub.watch' + channel.url;
 
-                    network.native(url, function (response) {
+                    network.native(targetUrl, function (response) {
                         var match = channel.regex.exec(response);
                         if (match) {
                             var stream = (match[1] || match[0]).replace(/["']/g, '').trim();
                             Lampa.Player.play({ url: stream, title: channel.title });
                         } else { 
-                            Lampa.Noty.show('Сайт открыт, но ссылка m3u8 не найдена'); 
+                            Lampa.Noty.show('Сайт ответил, но поток спрятан'); 
                         }
                     }, function () { 
-                        Lampa.Noty.show('Даже системный прокси заблокирован');
+                        var altUrl = 'https://corsproxy.io' + encodeURIComponent(channel.url);
+                        network.native(altUrl, function(res){
+                             var m = channel.regex.exec(res);
+                             if(m) {
+                                 var s = (m[1] || m[0]).replace(/["']/g, '').trim();
+                                 Lampa.Player.play({ url: s, title: channel.title });
+                             } else Lampa.Noty.show('Не удалось извлечь ссылку');
+                        }, function(){
+                             Lampa.Noty.show('Браузер блокирует все попытки запроса');
+                        }, false, {dataType: 'text'});
                     }, false, {dataType: 'text'});
                 });
 
                 html.append(card);
-                items.push(card);
+                items.push(card[0]); // Сохраняем чистый DOM-элемент для контроллера
             });
 
             scroll.append(html);
@@ -47,13 +56,22 @@
         this.render = function () { return scroll.render(); };
 
         this.active = function () {
+            // УПРАВЛЕНИЕ ПУЛЬТОМ
             Lampa.Controller.add('content', {
                 toggle: function () {
-                    Lampa.Controller.collectionSet(html);
-                    Lampa.Controller.collectionFocus(items, html);
+                    Lampa.Controller.collectionSet(html); 
+                    // Ставим фокус на первый элемент списка
+                    Lampa.Controller.collectionFocus(items.length > 0 ? items[0] : false, html);
                 },
-                up: function () { Lampa.Controller.toggle('head'); },
-                back: function () { Lampa.Activity.backward(); }
+                up: function () { 
+                    Lampa.Controller.toggle('head'); // Переход в шапку (поиск, настройки)
+                },
+                down: function () {
+                    // Если элементов много, Lampa сама прокрутит scroll
+                },
+                back: function () { 
+                    Lampa.Activity.backward(); // Назад при нажатии Back
+                }
             });
             Lampa.Controller.toggle('content');
         };
@@ -69,16 +87,18 @@
                 '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="white"/></svg></div>' +
                 '<div class="menu__text">HOME TV</div>' +
                 '</li>');
+
             item.on('hover:enter click', function () {
                 $('body').removeClass('menu--open');
                 Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin' });
             });
+
             var settings = menu.find('[data-action="settings"]');
             if (settings.length > 0) settings.before(item);
             else menu.append(item);
         }
     }
+
     setInterval(injectMenu, 2000);
 })();
-
 

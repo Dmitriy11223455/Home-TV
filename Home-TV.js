@@ -4,7 +4,7 @@
     function startPlugin() {
         var network = new Lampa.Request();
 
-        // 1. КОМПОНЕНТ С КАНАЛАМИ
+        // 1. КОМПОНЕНТ ПЛАГИНА
         Lampa.Component.add('home_tv_plugin', function (object, exam) {
             var scroll = new Lampa.Scroll({mask: true, over: true});
             var items = [];
@@ -47,9 +47,9 @@
             };
         });
 
-        // 2. НАСИЛЬНАЯ ОТРИСОВКА В МЕНЮ
-        function injectMenu() {
-            // Если пункт уже есть в меню, ничего не делаем
+        // 2. МЕТОД «ГРУБОЙ СИЛЫ» ДЛЯ МЕНЮ
+        function forceRenderMenu() {
+            // Если пункт уже есть — стоп
             if ($('.menu__list [data-action="home_tv"]').length > 0) return;
 
             var menu = $('.menu__list');
@@ -60,35 +60,32 @@
                     '</li>');
 
                 item.on('hover:enter', function () {
+                    // Закрываем меню (актуально для UV/мобилок)
+                    $('body').removeClass('menu--open');
                     Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin' });
                 });
 
-                // Вставляем перед настройками или просто в конец
+                // Вставляем строго перед настройками
                 var settings = menu.find('[data-action="settings"]');
                 if (settings.length > 0) settings.before(item);
                 else menu.append(item);
 
-                // Сообщаем контроллеру Лампы, что список обновился (для фокуса пультом)
-                if (window.Lampa.Controller && Lampa.Controller.update) {
-                    Lampa.Controller.update();
-                }
+                // Принудительно обновляем навигацию, чтобы пульт «увидел» кнопку
+                if (window.Lampa.Controller && Lampa.Controller.update) Lampa.Controller.update();
             }
         }
 
-        // Запуск через интервал (брутфорс)
-        setInterval(injectMenu, 1000);
+        // Запускаем бесконечный цикл проверки (раз в секунду)
+        setInterval(forceRenderMenu, 1000);
 
-        // Слежка за DOM (моментальная реакция на перерисовку меню Лампой)
-        var observer = new MutationObserver(function() {
-            injectMenu();
-        });
+        // Следим за изменениями экрана (если меню перерисовано движком)
+        var observer = new MutationObserver(forceRenderMenu);
         observer.observe(document.body, { childList: true, subtree: true });
 
-        injectMenu(); 
-        Lampa.Noty.show('HOME TV готов!');
+        forceRenderMenu();
     }
 
+    // Ожидание готовности
     if (window.appready) startPlugin();
     else Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') startPlugin(); });
 })();
-

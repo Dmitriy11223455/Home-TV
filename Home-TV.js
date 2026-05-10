@@ -7,6 +7,7 @@
             var items = [];
             var html = $('<div class="category-full"></div>');
 
+            // ИСПРАВЛЕНО: Запуск создания списка
             this.create = function () {
                 var my_channels = [
                     { title: 'Первый канал', url: 'https://berezka.live', regex: /(https?:\/\/[^"']+\.m3u8[^"']*)/i },
@@ -32,19 +33,20 @@
                     });
                     
                     html.append(card);
-                    items.push(card); // Добавляем карточку в массив для контроллера
+                    items.push(card);
                 });
                 
                 scroll.append(html);
-                return html; // Обязательно возвращаем результат
             };
+
+            // Вызываем наполнение списка
+            this.create();
 
             this.render = function () { return scroll.render(); };
 
             this.active = function () {
                 Lampa.Controller.add('content', {
                     toggle: function () { 
-                        // ИСПРАВЛЕНО: Правильная передача элементов в коллекцию
                         Lampa.Controller.collectionSet(html); 
                         Lampa.Controller.collectionFocus(items[0], html); 
                     },
@@ -82,3 +84,4 @@
     if (window.appready) startPlugin();
     else Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') startPlugin(); });
 })();
+

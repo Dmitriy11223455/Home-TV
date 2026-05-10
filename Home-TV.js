@@ -47,36 +47,30 @@
             };
         });
 
-        // 2. ДОБАВЛЕНИЕ В МЕНЮ ЧЕРЕЗ API LAMPA
+        // 2. ФУНКЦИЯ ДОБАВЛЕНИЯ В МЕНЮ
         function addMenuItem() {
-            var menu_item = {
-                id: 'home_tv',
-                title: 'HOME TV',
-                icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="white"/></svg>',
-                onSelect: function () {
-                    Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin' });
-                }
-            };
-
-            // Проверяем наличие метода и добавляем перед пунктом "Настройки"
-            if (Lampa.Menu.add) {
-                Lampa.Menu.add(menu_item); 
+            // Если пункт уже есть в DOM или в массиве меню, выходим
+            if ($('div[data-action="home_tv"]').length > 0) return;
+            
+            if (typeof Lampa.Menu !== 'undefined' && Lampa.Menu.add) {
+                Lampa.Menu.add({
+                    id: 'home_tv',
+                    title: 'HOME TV',
+                    icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="currentColor"/></svg>',
+                    onSelect: function () {
+                        Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin' });
+                    }
+                });
             } else {
-                // Запасной вариант для очень старых версий
-                var item = $('<li class="menu__item selector" data-action="home_tv"><div class="menu__ico">' + menu_item.icon + '</div><div class="menu__text">' + menu_item.title + '</div></li>');
-                item.on('hover:enter', menu_item.onSelect);
-                $('.menu__list').append(item);
+                // Если меню еще не прогрузилось, пробуем снова через короткое время
+                setTimeout(addMenuItem, 100);
             }
         }
 
         addMenuItem();
-        Lampa.Noty.show('HOME TV загружен!');
     }
 
-    if (window.appready) startPlugin();
-    else Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') startPlugin(); });
-})();
-
+    // Запуск плагина
     if (window.appready) startPlugin();
     else Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') startPlugin(); });
 })();

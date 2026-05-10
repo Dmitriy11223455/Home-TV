@@ -13,7 +13,6 @@
             ];
 
             my_channels.forEach(function (channel) {
-                // Создаем кнопку вручную, чтобы точно отобразилась
                 var card = $('<div class="menu__item selector" style="display: block; width: 100%; margin-bottom: 10px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px;">' +
                                 '<div class="menu__text" style="font-size: 1.5em; text-align: center;">' + channel.title + '</div>' +
                              '</div>');
@@ -26,8 +25,12 @@
                         if (match) {
                             var stream = (match[1] || match[0]).replace(/["']/g, '').trim();
                             Lampa.Player.play({ url: stream, title: channel.title });
-                        } else { Lampa.Noty.error('Не найдено'); }
-                    }, function () { Lampa.Noty.error('Ошибка прокси'); }, false, {dataType: 'text'});
+                        } else { 
+                            Lampa.Noty.show('Поток не найден в коде страницы'); 
+                        }
+                    }, function () { 
+                        Lampa.Noty.show('Ошибка сетевого запроса или прокси'); 
+                    }, false, {dataType: 'text'});
                 });
 
                 html.append(card);

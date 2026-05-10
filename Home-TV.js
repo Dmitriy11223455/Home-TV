@@ -7,14 +7,16 @@
         var html = $('<div class="category-full"></div>');
 
         this.create = function () {
-            var _this = this;
             var my_channels = [
                 { title: 'Первый канал', url: 'https://berezka.live', regex: /(https?:\/\/[^"']+\.m3u8[^"']*)/i },
                 { title: 'ТНТ', url: 'https://site-b.net', regex: /file:"(.*?\.m3u8)"/i }
             ];
 
             my_channels.forEach(function (channel) {
-                var card = Lampa.Template.get('button_item', {title: channel.title});
+                // Создаем кнопку вручную, чтобы точно отобразилась
+                var card = $('<div class="menu__item selector" style="display: block; width: 100%; margin-bottom: 10px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px;">' +
+                                '<div class="menu__text" style="font-size: 1.5em; text-align: center;">' + channel.title + '</div>' +
+                             '</div>');
                 
                 card.on('hover:enter', function () {
                     Lampa.Noty.show('Поиск потока...');
@@ -51,7 +53,7 @@
             Lampa.Controller.toggle('content');
         };
 
-        this.create(); // Запуск наполнения
+        this.create();
     });
 
     function injectMenu() {
@@ -74,8 +76,5 @@
         }
     }
 
-    if (window.appready) injectMenu();
-    else Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') injectMenu(); });
-    setInterval(injectMenu, 2000); // Постоянная проверка меню
+    setInterval(injectMenu, 2000);
 })();
-

@@ -18,32 +18,22 @@
                              '</div>');
                 
                 card.on('hover:enter', function () {
-                    Lampa.Noty.show('Пробиваем блокировку...');
+                    Lampa.Noty.show('Обход блокировок браузера...');
                     
+                    // ИСПОЛЬЗУЕМ СИСТЕМНЫЙ ПРОКСИ LAMPA
                     var network = new Lampa.Reguest();
-                    // Используем универсальный прокси через замену протокола, как делает оригинальный плагин
-                    var targetUrl = 'http://cub.watch' + channel.url;
+                    var url = Lampa.Utils.proxyAction(channel.url); 
 
-                    network.native(targetUrl, function (response) {
+                    network.native(url, function (response) {
                         var match = channel.regex.exec(response);
                         if (match) {
                             var stream = (match[1] || match[0]).replace(/["']/g, '').trim();
                             Lampa.Player.play({ url: stream, title: channel.title });
                         } else { 
-                            Lampa.Noty.show('Сайт ответил, но поток спрятан'); 
+                            Lampa.Noty.show('Сайт открыт, но ссылка m3u8 не найдена'); 
                         }
                     }, function () { 
-                        // Последняя попытка через альтернативный прокси
-                        var altUrl = 'https://corsproxy.io?' + encodeURIComponent(channel.url);
-                        network.native(altUrl, function(res){
-                             var m = channel.regex.exec(res);
-                             if(m) {
-                                 var s = (m[1] || m[0]).replace(/["']/g, '').trim();
-                                 Lampa.Player.play({ url: s, title: channel.title });
-                             } else Lampa.Noty.show('Не удалось извлечь ссылку');
-                        }, function(){
-                             Lampa.Noty.show('Браузер блокирует все попытки запроса');
-                        }, false, {dataType: 'text'});
+                        Lampa.Noty.show('Даже системный прокси заблокирован');
                     }, false, {dataType: 'text'});
                 });
 
@@ -79,18 +69,15 @@
                 '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="white"/></svg></div>' +
                 '<div class="menu__text">HOME TV</div>' +
                 '</li>');
-
             item.on('hover:enter click', function () {
                 $('body').removeClass('menu--open');
                 Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin' });
             });
-
             var settings = menu.find('[data-action="settings"]');
             if (settings.length > 0) settings.before(item);
             else menu.append(item);
         }
     }
-
     setInterval(injectMenu, 2000);
 })();
 

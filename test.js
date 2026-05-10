@@ -20,9 +20,9 @@
         
         // Список каналов (без дублей)
         var channels = [
-            { title: 'Первый канал', url: 'https://berezka.live', desc: 'Главный эфир страны. Актуальные новости и шоу.' },
-            { title: 'ТНТ', url: 'https://site-b.net', desc: 'Развлекательный контент, сериалы и юмор.' },
-            { title: 'Кино ТВ', url: 'https://berezka.live', desc: 'Лучшие фильмы мирового кинематографа.' }
+            { title: 'Первый канал Европа', url: 'https://berezka.live/berezka-tv/pervyi-kanal.html', desc: 'Главный эфир страны. Актуальные новости и шоу.' },
+            { title: 'ТНТ', url: 'https://berezka.live/berezka-tv/tnt.html', desc: 'Развлекательный контент, сериалы и юмор.' },
+            { title: 'Кино ТВ', url: 'http://oneliketv.net/kino-tv.html', desc: 'Лучшие фильмы мирового кинематографа.' }
         ];
 
         this.create = function () {

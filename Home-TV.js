@@ -7,6 +7,7 @@
             var items = [];
             var html = $('<div class="category-full"></div>');
 
+            // 1. СОЗДАЕМ СПИСОК СРАЗУ
             this.create = function () {
                 var my_channels = [
                     { title: 'Первый канал', url: 'https://berezka.live', regex: /(https?:\/\/[^"']+\.m3u8[^"']*)/i },
@@ -15,9 +16,9 @@
 
                 my_channels.forEach(function (channel) {
                     var card = Lampa.Template.get('button_item', {title: channel.title});
+                    
                     card.on('hover:enter', function () {
                         Lampa.Noty.show('Поиск потока...');
-                        
                         var network = new Lampa.Reguest();
                         var proxiedUrl = 'http://kulik.uz' + channel.url;
 
@@ -30,18 +31,18 @@
                             } else { Lampa.Noty.error('Не найдено'); }
                         }, function () { Lampa.Noty.error('Ошибка прокси'); }, false, {dataType: 'text'});
                     });
-                    
+
                     html.append(card);
                     items.push(card);
                 });
                 
-                // ИСПРАВЛЕНО: Сначала добавляем контент, потом рендерим скролл
                 scroll.append(html);
             };
 
+            // Запускаем наполнение при инициализации
+            this.create();
+
             this.render = function () { 
-                // Вызываем создание списка прямо перед рендером
-                this.create();
                 return scroll.render(); 
             };
 
@@ -64,6 +65,7 @@
             };
         });
 
+        // 2. ИНЪЕКЦИЯ В МЕНЮ
         function injectMenu() {
             if ($('li[data-action="home_tv"]').length > 0) return;
             var menu = $('.menu__list, .menu__items, .menu .list');

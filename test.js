@@ -1,126 +1,89 @@
 (function () {
     'use strict';
 
-    // 1. Стили интерфейса
+    // 1. Стили
     $('<style>' +
-        '.home-tv { display: flex; width: 100%; height: 100%; padding: 1.5% 2%; box-sizing: border-box; background: #000; }' +
-        '.home-tv__menu { width: 20%; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 20px; }' +
-        '.home-tv-menu__item { padding: 10px; color: rgba(255,255,255,0.5); font-size: 1.2em; cursor: pointer; }' +
-        '.home-tv__list { width: 45%; padding: 0 30px; height: 100%; overflow: hidden; }' +
-        '.home-tv__info { width: 35%; padding: 20px; background: rgba(255,255,255,0.03); border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }' +
-        '.home-tv-item { display: flex; align-items: center; padding: 12px 20px; background: rgba(255,255,255,0.07); border-radius: 10px; margin-bottom: 10px; border: 2px solid transparent; cursor: pointer; }' +
-        '.home-tv-item.focus { border-color: #f39c12; background: rgba(255,255,255,0.15); transform: scale(1.03); }' +
-        '.home-tv-item__num { font-size: 1.2em; color: #f39c12; margin-right: 15px; font-weight: bold; }' +
-        '.home-tv-info__title { font-size: 2.5em; margin-bottom: 15px; color: #fff; font-weight: bold; }' +
-        
-        /* Стили страницы канала */
-        '.htv-page { display: flex; padding: 50px; background: #000; height: 100%; width: 100%; align-items: center; }' +
-        '.htv-page__logo { width: 300px; height: 300px; object-fit: contain; background: rgba(255,255,255,0.05); border-radius: 20px; margin-right: 50px; box-shadow: 0 10px 50px rgba(243,156,18,0.2); }' +
-        '.htv-page__content { flex: 1; }' +
-        '.htv-page__title { font-size: 4em; font-weight: bold; color: #fff; margin-bottom: 20px; }' +
-        '.htv-page__desc { font-size: 1.5em; color: rgba(255,255,255,0.6); line-height: 1.6; margin-bottom: 40px; }' +
-        '.htv-page__button { display: inline-block; padding: 20px 60px; background: #f39c12; color: #000; border-radius: 15px; font-weight: bold; font-size: 1.8em; cursor: pointer; text-align: center; }' +
-        '.htv-page__button.focus { background: #fff; transform: scale(1.1); }' +
+        '.home-tv { display: flex; flex-direction: column; width: 100%; height: 100%; padding: 20px; box-sizing: border-box; background: #000; }' +
+        '.home-tv__head { margin-bottom: 20px; }' +
+        '.home-tv__source { color: #f39c12; font-size: 1.2em; margin-bottom: 10px; text-transform: uppercase; opacity: 0.6; }' +
+        '.home-tv__categories { display: flex; gap: 15px; margin-bottom: 30px; }' +
+        '.home-tv-cat { padding: 10px 20px; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer; border: 2px solid transparent; }' +
+        '.home-tv-cat.focus { border-color: #f39c12; background: rgba(255,255,255,0.15); }' +
+        '.home-tv__body { display: flex; flex: 1; overflow: hidden; }' +
+        '.home-tv__list { width: 60%; height: 100%; }' +
+        '.home-tv-item { display: flex; align-items: center; padding: 15px; background: rgba(255,255,255,0.03); margin-bottom: 8px; border-radius: 10px; border: 2px solid transparent; }' +
+        '.home-tv-item.focus { border-color: #f39c12; background: rgba(255,255,255,0.1); }' +
+        '.home-tv-item__num { color: #f39c12; font-weight: bold; margin-right: 15px; min-width: 30px; }' +
     '</style>').appendTo('body');
 
-    // 2. Компонент СТРАНИЦЫ КАНАЛА (Карточка канала с кнопкой Смотреть)
+    // 2. Компонент просмотра (Упрощенный для стабильности)
     Lampa.Component.add('home_tv_view', function (object, exam) {
-        var _this = this;
-        var html = $('<div class="htv-page">' +
-            '<img class="htv-page__logo" src="' + (object.img || 'https://berezka.live') + '">' +
-            '<div class="htv-page__content">' +
-                '<div class="htv-page__title"></div>' +
-                '<div class="htv-page__desc"></div>' +
-                '<div class="htv-page__button selector">СМОТРЕТЬ</div>' +
-            '</div>' +
+        var html = $('<div class="htv-page" style="padding:50px; text-align:center;">' +
+            '<h1 style="font-size:3em; margin-bottom:20px;">' + object.title + '</h1>' +
+            '<div class="htv-page__button selector" style="padding:20px 40px; background:#f39c12; display:inline-block; border-radius:10px; color:#000; font-weight:bold;">СМОТРЕТЬ ЭФИР</div>' +
         '</div>');
 
-        this.create = function () {
-            html.find('.htv-page__title').text(object.title);
-            html.find('.htv-page__desc').text(object.desc);
-            
-            html.find('.htv-page__button').on('hover:enter', function () {
-                Lampa.Noty.show('Поиск потока...');
-                var network = new Lampa.Reguest();
-                // Используем прокси Cub для парсинга ссылки (если нужно)
-                network.native('http://cub.watch' + encodeURIComponent(object.url), function (res) {
-                    var match = /(https?:\/\/[^"']+\.m3u8[^"']*)/i.exec(res);
-                    if (match) {
-                        Lampa.Player.play({ url: match[0], title: object.title });
-                    } else {
-                        // Если m3u8 не найден, пробуем играть прямую ссылку
-                        Lampa.Player.play({ url: object.url, title: object.title });
-                    }
-                }, function () {
-                    Lampa.Noty.show('Ошибка сети. Пробуем прямой запуск...');
-                    Lampa.Player.play({ url: object.url, title: object.title });
-                }, false, { dataType: 'text' });
-            });
-        };
-
+        this.create = function () {};
         this.render = function () { return html; };
-
         this.active = function () {
             Lampa.Controller.add('htv_view', {
                 toggle: function () {
                     Lampa.Controller.collectionSet(html);
-                    Lampa.Controller.collectionFocus(html.find('.htv-page__button')[0], html);
+                    Lampa.Controller.collectionFocus(html.find('.selector')[0], html);
                 },
                 back: function () { Lampa.Activity.backward(); }
             });
             Lampa.Controller.toggle('htv_view');
+            
+            html.find('.selector').on('hover:enter', function() {
+                Lampa.Player.play({ url: object.url, title: object.title });
+            });
         };
-
-        this.create();
     });
 
-    // 3. Главный компонент (Список каналов)
+    // 3. Главный компонент
     Lampa.Component.add('home_tv_plugin', function (object, exam) {
         var _this = this;
-        var scroll = new Lampa.Scroll({ mask: true, over: true });
         var items = [];
-        var html = $('<div class="home-tv"></div>');
-        var menu = $('<div class="home-tv__menu"></div>');
-        var list = $('<div class="home-tv__list"></div>');
-        var info = $('<div class="home-tv__info"></div>');
+        var scroll = new Lampa.Scroll({ mask: true, over: true });
+        var html = $('<div class="home-tv">' +
+            '<div class="home-tv__head">' +
+                '<div class="home-tv__source">Источник: Березка ТВ</div>' +
+                '<div class="home-tv__categories"></div>' +
+            '</div>' +
+            '<div class="home-tv__body">' +
+                '<div class="home-tv__list"></div>' +
+            '</div>' +
+        '</div>');
 
         this.create = function () {
-            ['Все каналы', 'Основные', 'Кино'].forEach(function (cat) {
-                menu.append('<div class="home-tv-menu__item">' + cat + '</div>');
-            });
-
-            var my_channels = [
-                { title: 'Первый канал', url: 'https://berezka.live', desc: 'Главный эфир страны. Актуальные новости, аналитика и лучшие шоу России.' },
-                { title: 'ТНТ', url: 'https://site-b.net', desc: 'Самый популярный развлекательный телеканал. Сериалы, юмор и реалити-шоу.' }
+            var cats = ['Березка ТВ', 'Архив', 'Premium', 'Детские', 'Спорт'];
+            var channels = [
+                { title: 'Первый канал', url: 'https://berezka.live' },
+                { title: 'ТНТ', url: 'https://berezka.live' }
             ];
 
-            my_channels.forEach(function (channel, index) {
-                var card = $('<div class="home-tv-item selector">' +
-                    '<div class="home-tv-item__num">' + (index + 1).toString().padStart(3, '0') + '</div>' +
-                    '<div class="home-tv-item__name">' + channel.title + '</div>' +
-                    '</div>');
-
-                card.on('hover:focus', function () {
-                    info.html('<div class="home-tv-info__title">' + channel.title + '</div>' +
-                        '<div class="home-tv-info__desc" style="font-size:1.3em; opacity:0.6">' + channel.desc + '</div>');
-                    scroll.scrollTo(card);
-                });
-
-                card.on('hover:enter', function () {
-                    Lampa.Activity.push({
-                        title: channel.title,
-                        component: 'home_tv_view',
-                        url: channel.url,
-                        desc: channel.desc
-                    });
-                });
-
-                list.append(card);
-                items.push(card);
+            // Рендер категорий
+            cats.forEach(function(c) {
+                var cat = $('<div class="home-tv-cat selector">' + c + '</div>');
+                html.find('.home-tv__categories').append(cat);
+                items.push(cat);
             });
 
-            html.append(menu).append(list).append(info);
-            scroll.append(list);
+            // Рендер списка
+            channels.forEach(function(ch, i) {
+                var card = $('<div class="home-tv-item selector">' +
+                    '<div class="home-tv-item__num">' + (i+1) + '</div>' +
+                    '<div class="home-tv-item__name">' + ch.title + '</div>' +
+                '</div>');
+                
+                card.on('hover:enter', function() {
+                    Lampa.Activity.push({ component: 'home_tv_view', title: ch.title, url: ch.url });
+                });
+
+                html.find('.home-tv__list').append(card);
+                items.push(card);
+            });
         };
 
         this.render = function () { return html; };
@@ -129,10 +92,8 @@
             Lampa.Controller.add('home_tv_main', {
                 toggle: function () {
                     Lampa.Controller.collectionSet(html);
-                    Lampa.Controller.collectionFocus(items[0][0], html);
+                    Lampa.Controller.collectionFocus(items[0] ? items[0][0] : null, html);
                 },
-                up: function () { Lampa.Controller.move('up'); },
-                down: function () { Lampa.Controller.move('down'); },
                 back: function () { Lampa.Activity.backward(); }
             });
             Lampa.Controller.toggle('home_tv_main');
@@ -141,37 +102,25 @@
         this.create();
     });
 
-    // 4. Инъекция в меню Lampa
-    function injectMenu() {
+    // 4. Инициализация меню
+    function init() {
         if ($('li[data-action="home_tv"]').length > 0) return;
-        
-        var menu_list = $('.menu__list, .menu__items, .menu .list');
-        if (menu_list.length > 0) {
+        var menu = $('.menu__list');
+        if (menu.length) {
             var item = $('<li class="menu__item selector" data-action="home_tv">' +
-                '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="white"/></svg></div>' +
+                '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="2" y="7" width="20" height="13" rx="2"/><path d="M17 2l-5 5-5-5"/></svg></div>' +
                 '<div class="menu__text">HOME TV</div>' +
-                '</li>');
-
-            item.on('hover:enter click', function () {
-                $('body').removeClass('menu--open'); // Закрываем боковую панель
-                Lampa.Activity.push({ 
-                    title: 'HOME TV', 
-                    component: 'home_tv_plugin',
-                    page: 1 
-                });
+            '</li>');
+            
+            item.on('hover:enter click', function() {
+                $('body').removeClass('menu--open');
+                Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin' });
             });
-
-            var set = menu_list.find('[data-action="settings"]');
-            if (set.length > 0) set.before(item);
-            else menu_list.append(item);
+            menu.append(item);
         }
     }
 
-    // Запуск при загрузке
-    if (window.appready) injectMenu();
-    else {
-        Lampa.Listener.follow('app', function (e) {
-            if (e.type == 'ready') injectMenu();
-        });
-    }
+    if (window.appready) init();
+    else Lampa.Listener.follow('app', function(e){ if(e.type=='ready') init(); });
 })();
+

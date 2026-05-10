@@ -1,96 +1,81 @@
 (function () {
     'use strict';
 
-    function startPlugin() {
-        Lampa.Component.add('home_tv_plugin', function (object, exam) {
-            var scroll = new Lampa.Scroll({mask: true, over: true});
-            var items = [];
-            var html = $('<div class="category-full"></div>');
+    Lampa.Component.add('home_tv_plugin', function (object, exam) {
+        var scroll = new Lampa.Scroll({mask: true, over: true});
+        var items = [];
+        var html = $('<div class="category-full"></div>');
 
-            // 1. СОЗДАЕМ СПИСОК СРАЗУ
-            this.create = function () {
-                var my_channels = [
-                    { title: 'Первый канал', url: 'https://berezka.live', regex: /(https?:\/\/[^"']+\.m3u8[^"']*)/i },
-                    { title: 'ТНТ', url: 'https://site-b.net', regex: /file:"(.*?\.m3u8)"/i }
-                ];
+        this.create = function () {
+            var _this = this;
+            var my_channels = [
+                { title: 'Первый канал', url: 'https://berezka.live', regex: /(https?:\/\/[^"']+\.m3u8[^"']*)/i },
+                { title: 'ТНТ', url: 'https://site-b.net', regex: /file:"(.*?\.m3u8)"/i }
+            ];
 
-                my_channels.forEach(function (channel) {
-                    var card = Lampa.Template.get('button_item', {title: channel.title});
-                    
-                    card.on('hover:enter', function () {
-                        Lampa.Noty.show('Поиск потока...');
-                        var network = new Lampa.Reguest();
-                        var proxiedUrl = 'http://kulik.uz' + channel.url;
-
-                        network.native(proxiedUrl, function (response) {
-                            var match = channel.regex.exec(response);
-                            if (match) {
-                                var stream_url = match[1] || match[0];
-                                var stream = stream_url.replace(/["']/g, '').trim();
-                                Lampa.Player.play({ url: stream, title: channel.title });
-                            } else { Lampa.Noty.error('Не найдено'); }
-                        }, function () { Lampa.Noty.error('Ошибка прокси'); }, false, {dataType: 'text'});
-                    });
-
-                    html.append(card);
-                    items.push(card);
-                });
+            my_channels.forEach(function (channel) {
+                var card = Lampa.Template.get('button_item', {title: channel.title});
                 
-                scroll.append(html);
-            };
-
-            // Запускаем наполнение при инициализации
-            this.create();
-
-            this.render = function () { 
-                return scroll.render(); 
-            };
-
-            this.active = function () {
-                Lampa.Controller.add('content', {
-                    toggle: function () { 
-                        Lampa.Controller.collectionSet(html); 
-                        Lampa.Controller.collectionFocus(items.length > 0 ? items[0] : false, html); 
-                    },
-                    up: function () { Lampa.Controller.toggle('head'); },
-                    back: function () { Lampa.Activity.backward(); }
-                });
-                Lampa.Controller.toggle('content');
-            };
-
-            this.destroy = function () {
-                scroll.destroy();
-                html.remove();
-                items = [];
-            };
-        });
-
-        // 2. ИНЪЕКЦИЯ В МЕНЮ
-        function injectMenu() {
-            if ($('li[data-action="home_tv"]').length > 0) return;
-            var menu = $('.menu__list, .menu__items, .menu .list');
-            if (menu.length > 0) {
-                var item = $('<li class="menu__item selector" data-action="home_tv">' +
-                    '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="white"/></svg></div>' +
-                    '<div class="menu__text">HOME TV</div>' +
-                    '</li>');
-
-                item.on('hover:enter click', function () {
-                    $('body').removeClass('menu--open');
-                    Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin' });
+                card.on('hover:enter', function () {
+                    Lampa.Noty.show('Поиск потока...');
+                    var network = new Lampa.Reguest();
+                    network.native('http://kulik.uz' + channel.url, function (response) {
+                        var match = channel.regex.exec(response);
+                        if (match) {
+                            var stream = (match[1] || match[0]).replace(/["']/g, '').trim();
+                            Lampa.Player.play({ url: stream, title: channel.title });
+                        } else { Lampa.Noty.error('Не найдено'); }
+                    }, function () { Lampa.Noty.error('Ошибка прокси'); }, false, {dataType: 'text'});
                 });
 
-                var settings = menu.find('[data-action="settings"]');
-                if (settings.length > 0) settings.before(item);
-                else menu.append(item);
-            }
+                html.append(card);
+                items.push(card);
+            });
+
+            scroll.append(html);
+        };
+
+        this.render = function () {
+            return scroll.render();
+        };
+
+        this.active = function () {
+            Lampa.Controller.add('content', {
+                toggle: function () {
+                    Lampa.Controller.collectionSet(html);
+                    Lampa.Controller.collectionFocus(items[0], html);
+                },
+                up: function () { Lampa.Controller.toggle('head'); },
+                back: function () { Lampa.Activity.backward(); }
+            });
+            Lampa.Controller.toggle('content');
+        };
+
+        this.create(); // Запуск наполнения
+    });
+
+    function injectMenu() {
+        if ($('li[data-action="home_tv"]').length > 0) return;
+        var menu = $('.menu__list, .menu__items, .menu .list');
+        if (menu.length > 0) {
+            var item = $('<li class="menu__item selector" data-action="home_tv">' +
+                '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="white"/></svg></div>' +
+                '<div class="menu__text">HOME TV</div>' +
+                '</li>');
+
+            item.on('hover:enter click', function () {
+                $('body').removeClass('menu--open');
+                Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin' });
+            });
+
+            var settings = menu.find('[data-action="settings"]');
+            if (settings.length > 0) settings.before(item);
+            else menu.append(item);
         }
-
-        setInterval(injectMenu, 1000);
-        injectMenu();
     }
 
-    if (window.appready) startPlugin();
-    else Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') startPlugin(); });
+    if (window.appready) injectMenu();
+    else Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') injectMenu(); });
+    setInterval(injectMenu, 2000); // Постоянная проверка меню
 })();
 

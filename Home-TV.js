@@ -20,7 +20,7 @@
                         Lampa.Noty.show('Поиск потока...');
                         
                         // Создаем запрос только при клике
-                        var network = new Lampa.Request();
+                        var network = new Lampa.Reguest();
                         var proxiedUrl = 'http://kulik.uz' + channel.url;
 
                         network.native(proxiedUrl, function (response) {

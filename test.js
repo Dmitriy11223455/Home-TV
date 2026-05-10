@@ -1,33 +1,36 @@
 (function () {
     'use strict';
 
-    // 1. Стили интерфейса (Ваши стили)
-    $('<style>' +
-        '.home-tv { display: flex; width: 100%; height: 100%; padding: 1.5% 2%; box-sizing: border-box; background: #000; }' +
-        '.home-tv__menu { width: 20%; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 20px; }' +
-        '.home-tv__list { width: 45%; padding: 0 30px; }' +
-        '.home-tv__info { width: 35%; padding: 20px; background: rgba(255,255,255,0.03); border-radius: 15px; }' +
-        '.home-tv-item { display: flex; align-items: center; padding: 12px 20px; background: rgba(255,255,255,0.07); border-radius: 10px; margin-bottom: 10px; border: 2px solid transparent; }' +
+    // 1. СТИЛИ (Ваши + исправления для видимости)
+    var styles = '<style>' +
+        '.home-tv { display: flex; width: 100%; height: 100%; padding: 1.5% 2%; box-sizing: border-box; background: #000; position: absolute; top:0; left:0; z-index:10; }' +
+        '.home-tv__menu { width: 25%; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 20px; overflow-y: auto; }' +
+        '.home-tv__list { width: 40%; padding: 0 30px; overflow-y: auto; }' +
+        '.home-tv__info { width: 35%; padding: 20px; background: rgba(255,255,255,0.03); border-radius: 15px; display: flex; flex-direction: column; }' +
+        '.home-tv-item { display: flex; align-items: center; padding: 12px 20px; background: rgba(255,255,255,0.07); border-radius: 10px; margin-bottom: 10px; border: 2px solid transparent; cursor: pointer; }' +
         '.home-tv-item.focus { border-color: #f39c12; background: rgba(255,255,255,0.15); transform: scale(1.03); }' +
         '.home-tv-item__num { font-size: 1.2em; color: #f39c12; margin-right: 15px; font-weight: bold; }' +
-        '.home-tv-info__title { font-size: 2.5em; margin-bottom: 15px; color: #fff; }' +
-        '.home-tv-menu__item { padding: 12px; opacity: 0.5; font-size: 1.3em; margin-bottom: 5px; border-radius: 8px; cursor: pointer; }' +
-        '.home-tv-menu__item.focus { opacity: 1; color: #fff; background: rgba(243,156,18,0.5); }' +
-    '</style>').appendTo('body');
+        '.home-tv-menu__item { padding: 15px; opacity: 0.5; font-size: 1.4em; margin-bottom: 8px; border-radius: 10px; background: rgba(255,255,255,0.03); }' +
+        '.home-tv-menu__item.focus { opacity: 1; background: #f39c12; color: #000; font-weight: bold; }' +
+        '.home-tv-info__title { font-size: 2.5em; color: #fff; margin-bottom: 15px; }' +
+        '</style>';
+    
+    if (!$('style:contains(".home-tv")').length) $(styles).appendTo('body');
 
+    // 2. КОМПОНЕНТ ПЛАГИНА
     Lampa.Component.add('home_tv_plugin', function (object, exam) {
         var _this = this;
         var scroll = new Lampa.Scroll({mask: true, over: true});
-        var items = []; // Список элементов для контроллера
         var html = $('<div class="home-tv"></div>');
         var menu = $('<div class="home-tv__menu"></div>');
         var list = $('<div class="home-tv__list"></div>');
         var info = $('<div class="home-tv__info"></div>');
+        var last_item;
 
-        // Данные: Категории и их каналы
+        // Данные из вашего запроса
         var data_sources = [
             {
-                category: 'Все каналы',
+                category: 'Основные',
                 channels: [
                     { title: 'Первый канал', url: 'https://berezka.live', desc: 'Главный эфир страны. Актуальные новости и шоу.' },
                     { title: 'ТНТ', url: 'https://site-b.net', desc: 'Развлекательный контент, сериалы и юмор.' }
@@ -36,36 +39,28 @@
             {
                 category: 'Кино',
                 channels: [
-                    { title: 'Кино ТВ', url: 'https://berezka.live/cinema', desc: 'Лучшие фильмы мирового кинематографа.' }
+                    { title: 'Кино ТВ', url: 'https://berezka.live/cinema', desc: 'Лучшие фильмы и премьеры в HD качестве.' }
                 ]
             }
         ];
 
         this.create = function () {
-            // 2. ОТОБРАЖЕНИЕ В ЛЕВОЕ МЕНЮ (Категории)
+            // Создаем левое меню категорий
             data_sources.forEach(function(source) {
-                var menu_item = $('<div class="home-tv-menu__item selector">' + source.category + '</div>');
-                
-                menu_item.on('hover:enter', function() {
-                    _this.renderChannels(source.channels); // Перерисовываем каналы при выборе
+                var m_item = $('<div class="home-tv-menu__item selector">' + source.category + '</div>');
+                m_item.on('hover:enter', function() {
+                    _this.renderChannels(source.channels);
                 });
-
-                menu.append(menu_item);
+                menu.append(m_item);
             });
 
             html.append(menu).append(list).append(info);
-            
-            // Загружаем первую категорию по умолчанию
-            this.renderChannels(data_sources[0].channels);
-
+            this.renderChannels(data_sources[0].channels); // Загрузка первой категории
             return this.render();
         };
 
-        // Метод отрисовки списка каналов
         this.renderChannels = function(channels) {
-            list.empty(); // Очищаем список
-            items = []; // Сбрасываем фокусную коллекцию
-            
+            list.empty();
             channels.forEach(function (channel, index) {
                 var card = $('<div class="home-tv-item selector">' +
                                 '<div class="home-tv-item__num">' + (index + 1).toString().padStart(3, '0') + '</div>' +
@@ -73,12 +68,13 @@
                              '</div>');
 
                 card.on('hover:focus', function () {
+                    last_item = card[0];
                     info.html('<div class="home-tv-info__title">' + channel.title + '</div>' +
-                              '<div class="home-tv-info__desc" style="font-size:1.2em; opacity:0.8">' + channel.desc + '</div>');
+                              '<div class="home-tv-info__desc" style="font-size:1.3em; opacity:0.6">' + channel.desc + '</div>');
                 });
 
                 card.on('hover:enter', function () {
-                    Lampa.Noty.show('Запуск ' + channel.title);
+                    Lampa.Noty.show('Запуск: ' + channel.title);
                     var network = new Lampa.Reguest();
                     network.native('http://cub.watch/proxy?q=' + encodeURIComponent(channel.url), function (res) {
                         var match = /(https?:\/\/[^"']+\.m3u8[^"']*)/i.exec(res);
@@ -88,12 +84,8 @@
                 });
 
                 list.append(card);
-                items.push(card[0]); // Добавляем нативный элемент для контроллера
             });
-
-            // Обновляем скролл
-            list.append(scroll.render());
-            scroll.append(list);
+            Lampa.Controller.toggle('home_tv_ctrl'); // Обновляем контроллер
         };
 
         this.render = function () { return html; };
@@ -102,8 +94,7 @@
             Lampa.Controller.add('home_tv_ctrl', {
                 toggle: function () {
                     Lampa.Controller.collectionSet(html);
-                    // Фокус либо на меню, либо на первый канал
-                    Lampa.Controller.collectionFocus(html.find('.selector')[0], html);
+                    Lampa.Controller.collectionFocus(last_item || html.find('.selector')[0], html);
                 },
                 up: function () { Lampa.Controller.move('up'); },
                 down: function () { Lampa.Controller.move('down'); },
@@ -117,24 +108,41 @@
         this.create();
     });
 
-    // Инъекция в главное меню Lampa
-    function injectMenu() {
-        if ($('li[data-action="home_tv"]').length > 0) return;
-        var menu_list = $('.menu__list, .menu__items, .menu .list');
-        if (menu_list.length > 0) {
-            var item = $('<li class="menu__item selector" data-action="home_tv">' +
-                '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org/2000/svg"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="white"/></svg></div>' +
+    // 3. ФУНКЦИЯ ВКЛЕЙКИ В МЕНЮ (С защитой)
+    function addMenuItem() {
+        if ($('li[data-action="home_tv"]').length > 0) return; // Если уже есть, не дублируем
+
+        var menu_list = $('.menu .menu__list'); // Ищем основной список
+        if (menu_list.length) {
+            var button = $('<li class="menu__item selector" data-action="home_tv">' +
+                '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="#f39c12"/></svg></div>' +
                 '<div class="menu__text">HOME TV</div>' +
                 '</li>');
 
-            item.on('hover:enter click', function () {
-                $('body').removeClass('menu--open');
-                Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin' });
+            button.on('hover:enter click', function () {
+                Lampa.Activity.push({
+                    title: 'HOME TV',
+                    component: 'home_tv_plugin'
+                });
             });
 
-            var set = menu_list.find('[data-action="settings"]');
-            if (set.length > 0) set.before(item); else menu_list.append(item);
+            // Вставляем перед настройками или просто в конец
+            var settings = menu_list.find('[data-action="settings"]').closest('li');
+            if (settings.length) settings.before(button);
+            else menu_list.append(button);
+            
+            console.log('HOME TV: Кнопка добавлена');
         }
     }
-    setInterval(injectMenu, 2000);
+
+    // Запуск проверки наличия меню каждые 2 секунды (на случай долгой загрузки)
+    var checkMenu = setInterval(function() {
+        addMenuItem();
+    }, 2000);
+
+    // Дополнительный запуск при старте приложения
+    Lampa.Listener.follow('app', function (e) {
+        if (e.type == 'ready') addMenuItem();
+    });
+
 })();

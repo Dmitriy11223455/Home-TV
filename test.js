@@ -16,7 +16,7 @@
         var scroll = new Lampa.Scroll({mask: true, over: true});
         var html = $('<div class="home-tv-list"></div>');
         
-        // ТВОЙ СПИСОК (Названия должны быть как в файле .m3u8)
+        // ТВОЙ СПИСОК (названия должны быть как в файле .m3u8)
         var channels = [
             { title: 'Первый канал', url: 'https://githubusercontent.com' },
             { title: 'ТНТ', url: 'https://githubusercontent.com' },
@@ -37,18 +37,17 @@
                 card.on('hover:enter', function () {
                     Lampa.Noty.show('Ищу поток для ' + channel.title);
                     
-                    // Используем стабильный прокси AllOrigins
+                    // ПРЯМОЙ ЗАПРОС К GITHUB БЕЗ ПРОКСИ
                     $.ajax({
-                        url: 'https://allorigins.win' + encodeURIComponent(channel.url),
+                        url: channel.url,
                         method: 'GET',
-                        success: function(response) {
-                            var data = response.contents; // Текст плейлиста из прокси
+                        dataType: 'text', // Указываем, что ждем обычный текст (плейлист)
+                        success: function(data) {
                             var lines = data.split('\n');
                             var streamUrl = '';
                             var searchName = channel.title.toLowerCase();
 
                             for (var i = 0; i < lines.length; i++) {
-                                // Поиск строки с названием канала
                                 if (lines[i].toLowerCase().indexOf('#extinf') > -1 && lines[i].toLowerCase().indexOf(searchName) > -1) {
                                     for (var j = i + 1; j < lines.length; j++) {
                                         var line = lines[j].trim();
@@ -109,6 +108,11 @@
         });
         $('.menu .menu__list').append(menu_item);
     }
+
+    Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') addPlugin(); });
+    setInterval(addPlugin, 2000);
+})();
+
 
     Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') addPlugin(); });
     setInterval(addPlugin, 2000);

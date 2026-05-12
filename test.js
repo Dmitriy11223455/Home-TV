@@ -20,7 +20,7 @@
         var channels = [
             { title: 'Первый канал', url: 'https://githubusercontent.com' },
             { title: 'ТНТ', url: 'https://githubusercontent.com' },
-            { title: 'Россия 1', url: 'https://vgtrkregion-reg.cdnvideo.ru/vgtrk/0/russia1-hd/index.m3u8' },
+            { title: 'Россия 1', url: 'https://raw.githubusercontent.com/Dmitriy11223455/FREE_IPTV/refs/heads/main/RusTVLive.m3u8' },
             { title: 'СТС', url: 'https://githubusercontent.com' },
             { title: 'РЕН ТВ', url: 'https://githubusercontent.com' }
         ];

@@ -19,7 +19,7 @@
         var channels = [
             { title: 'Первый канал', url: 'https://githubusercontent.com' },
             { title: 'ТНТ', url: 'https://githubusercontent.com' },
-            { title: 'ТОП 100', url: 'https://githubusercontent.com' },
+            { title: 'ТОП 100', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u' },
             { title: 'СТС', url: 'https://githubusercontent.com' },
             { title: 'РЕН ТВ', url: 'https://githubusercontent.com' }
         ];

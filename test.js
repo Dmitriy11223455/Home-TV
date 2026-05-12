@@ -19,7 +19,7 @@
         var channels = [
             { title: 'Первый канал', url: 'https://githubusercontent.com' },
             { title: 'ТНТ', url: 'https://githubusercontent.com' },
-            { title: 'ТОП 100', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u' }, //ссылка на плейлист
+            { title: 'ТОП 100', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u' },
             { title: 'СТС', url: 'https://githubusercontent.com' },
             { title: 'РЕН ТВ', url: 'https://githubusercontent.com' }
         ];
@@ -36,41 +36,42 @@
                 card.on('hover:enter', function () {
                     Lampa.Noty.show('Ищу поток для ' + channel.title);
                     
-                    $.ajax({
-                        url: channel.url,
-                        method: 'GET',
-                        dataType: 'text',
-                        success: function(data) {
-                            var lines = data.split('\n');
-                            var streamUrl = '';
-                            var searchName = channel.title.toLowerCase();
+                    var network = new Lampa.Network();
+                    network.silent(channel.url, function (data) {
+                        var lines = data.split('\n');
+                        var streamUrl = '';
+                        var searchName = channel.title.toLowerCase();
 
-                            for (var i = 0; i < lines.length; i++) {
-                                let line = lines[i].trim();
-                                // Ищем строку с названием канала
-                                if (line.toLowerCase().indexOf('#extinf') > -1 && line.toLowerCase().indexOf(searchName) > -1) {
-                                    // Проверяем следующие 3 строки в поисках ссылки
-                                    for (var j = i + 1; j <= i + 3 && j < lines.length; j++) {
-                                        let nextLine = lines[j].trim();
-                                        if (nextLine.startsWith('http')) {
-                                            streamUrl = nextLine;
-                                            break;
-                                        }
+                        for (var i = 0; i < lines.length; i++) {
+                            let line = lines[i].trim();
+                            if (line.toLowerCase().indexOf('#extinf') > -1 && line.toLowerCase().indexOf(searchName) > -1) {
+                                for (var j = i + 1; j <= i + 3 && j < lines.length; j++) {
+                                    let nextLine = lines[j].trim();
+                                    if (nextLine.startsWith('http')) {
+                                        streamUrl = nextLine;
+                                        break;
                                     }
                                 }
-                                if (streamUrl) break;
                             }
-
-                            if (streamUrl) {
-                                Lampa.Player.play({ url: streamUrl, title: channel.title });
-                            } else {
-                                Lampa.Noty.show('Канал не найден в плейлисте');
-                            }
-                        },
-                        error: function() {
-                            Lampa.Noty.show('Ошибка загрузки плейлиста');
+                            if (streamUrl) break;
                         }
-                    });
+
+                        if (streamUrl) {
+                            // ИСПРАВЛЕНИЕ: Добавление заголовков для обхода ошибки 409
+                            Lampa.Player.play({ 
+                                url: streamUrl, 
+                                title: channel.title,
+                                headers: {
+                                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+                                    'Referer': 'https://lampa.mx'
+                                }
+                            });
+                        } else {
+                            Lampa.Noty.show('Канал не найден в плейлисте');
+                        }
+                    }, function (a, c) {
+                        Lampa.Noty.show('Ошибка загрузки плейлиста: ' + network.errorDecode(a, c));
+                    }, false, { dataType: 'text' });
                 });
                 inner.append(card);
             });
@@ -86,7 +87,7 @@
             Lampa.Controller.add('home_tv_ctrl', {
                 toggle: function () { 
                     Lampa.Controller.collectionSet(html); 
-                    Lampa.Controller.collectionFocus(html.find('.selector')[0], html); 
+                    Lampa.Controller.collectionFocus(html.find('.selector'), html); 
                 },
                 up: function () { Lampa.Controller.move('up'); },
                 down: function () { Lampa.Controller.move('down'); },

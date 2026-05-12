@@ -16,7 +16,6 @@
         var scroll = new Lampa.Scroll({mask: true, over: true});
         var html = $('<div class="home-tv-list"></div>');
         
-        // ТВОЙ СПИСОК (названия должны быть как в файле .m3u8)
         var channels = [
             { title: 'Первый канал', url: 'https://githubusercontent.com' },
             { title: 'ТНТ', url: 'https://githubusercontent.com' },
@@ -37,11 +36,10 @@
                 card.on('hover:enter', function () {
                     Lampa.Noty.show('Ищу поток для ' + channel.title);
                     
-                    // ПРЯМОЙ ЗАПРОС К GITHUB БЕЗ ПРОКСИ
                     $.ajax({
                         url: channel.url,
                         method: 'GET',
-                        dataType: 'text', // Указываем, что ждем обычный текст (плейлист)
+                        dataType: 'text',
                         success: function(data) {
                             var lines = data.split('\n');
                             var streamUrl = '';
@@ -108,11 +106,6 @@
         });
         $('.menu .menu__list').append(menu_item);
     }
-
-    Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') addPlugin(); });
-    setInterval(addPlugin, 2000);
-})();
-
 
     Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') addPlugin(); });
     setInterval(addPlugin, 2000);

@@ -16,11 +16,11 @@
         var scroll = new Lampa.Scroll({mask: true, over: true});
         var html = $('<div class="home-tv-list"></div>');
         
-        // ТВОЙ СПИСОК (названия должны быть похожи на те, что в плейлисте)
+        // ТВОЙ СПИСОК (Названия должны быть как в файле .m3u8)
         var channels = [
             { title: 'Первый канал', url: 'https://githubusercontent.com' },
             { title: 'ТНТ', url: 'https://githubusercontent.com' },
-            { title: 'Россия 1', url: 'https://raw.githubusercontent.com/Dmitriy11223455/FREE_IPTV/refs/heads/main/RusTVLive.m3u8' },
+            { title: 'Россия 1', url: 'https://githubusercontent.com' },
             { title: 'СТС', url: 'https://githubusercontent.com' },
             { title: 'РЕН ТВ', url: 'https://githubusercontent.com' }
         ];
@@ -37,18 +37,19 @@
                 card.on('hover:enter', function () {
                     Lampa.Noty.show('Ищу поток для ' + channel.title);
                     
+                    // Используем стабильный прокси AllOrigins
                     $.ajax({
-                        url: 'https://corsproxy.io/?url=' + encodeURIComponent(channel.url),
+                        url: 'https://allorigins.win' + encodeURIComponent(channel.url),
                         method: 'GET',
-                        success: function(data) {
+                        success: function(response) {
+                            var data = response.contents; // Текст плейлиста из прокси
                             var lines = data.split('\n');
                             var streamUrl = '';
                             var searchName = channel.title.toLowerCase();
 
                             for (var i = 0; i < lines.length; i++) {
-                                // Ищем строку #EXTINF, в которой есть наше название
+                                // Поиск строки с названием канала
                                 if (lines[i].toLowerCase().indexOf('#extinf') > -1 && lines[i].toLowerCase().indexOf(searchName) > -1) {
-                                    // Ищем ссылку в следующих строках
                                     for (var j = i + 1; j < lines.length; j++) {
                                         var line = lines[j].trim();
                                         if (line.startsWith('http')) {

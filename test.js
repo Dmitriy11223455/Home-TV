@@ -38,7 +38,7 @@
                     Lampa.Noty.show('Ищу поток для ' + channel.title);
                     
                     $.ajax({
-                        url: 'https://corsproxy.io?' + encodeURIComponent(channel.url),
+                        url: 'https://corsproxy.io/?url=' + encodeURIComponent(channel.url),
                         method: 'GET',
                         success: function(data) {
                             var lines = data.split('\n');

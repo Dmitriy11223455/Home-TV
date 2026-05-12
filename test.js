@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    // 1. Стили
+    // 1. Стили (без изменений)
     if (!$('#home-tv-styles').length) {
         $('<style id="home-tv-styles">' +
             '.home-tv-list { padding: 20px; }' +
@@ -11,7 +11,7 @@
         '</style>').appendTo('body');
     }
 
-    // 2. Компонент
+    // 2. Компонент (без изменений)
     Lampa.Component.add('home_tv_plugin', function (object, exam) {
         var scroll = new Lampa.Scroll({mask: true, over: true});
         var html = $('<div class="home-tv-list"></div>');
@@ -96,26 +96,37 @@
         this.create();
     });
 
-    // 3. Добавление в меню
+    // 3. Добавление в меню (ИЗМЕНЕНО)
     function addPlugin() {
+        // Проверяем, не добавлен ли уже пункт
         if ($('.menu__item[data-action="home_tv"]').length > 0) return;
-        var menu_item = $('<li class="menu__item selector" data-action="home_tv">' +
-            '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="#f39c12"/></svg></div>' +
-            '<div class="menu__text">HOME TV</div>' +
-            '</li>');
-        
-        menu_item.on('hover:enter click', function () {
-            Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin', page: 1 });
+
+        var menu_item = {
+            title: 'HOME TV',
+            icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="#f39c12"/></svg>',
+            type: 'home_tv'
+        };
+
+        // Используем штатный метод Lampa для добавления пункта в меню
+        Lampa.Menu.add(menu_item);
+
+        // Вешаем событие на клик по нашему пункту
+        $('.menu__item[data-action="home_tv"]').off('hover:enter click').on('hover:enter click', function () {
+            Lampa.Activity.push({
+                title: 'HOME TV',
+                component: 'home_tv_plugin',
+                page: 1
+            });
         });
-        
-        $('.menu .menu__list').append(menu_item);
     }
 
-    Lampa.Listener.follow('app', function (e) { 
-        if (e.type == 'ready') addPlugin(); 
+    // Слушаем готовность приложения
+    Lampa.Listener.follow('app', function (e) {
+        if (e.type == 'ready') {
+            addPlugin();
+        }
     });
-    
-    setInterval(addPlugin, 2000);
+
 })();
 
 

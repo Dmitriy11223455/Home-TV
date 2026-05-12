@@ -19,7 +19,7 @@
         var channels = [
             { title: 'Первый канал', url: 'https://githubusercontent.com' },
             { title: 'ТНТ', url: 'https://githubusercontent.com' },
-            { title: 'ТОП 100', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u' },
+            { title: 'ТОП 100', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u' }, //ссылка на плейлист
             { title: 'СТС', url: 'https://githubusercontent.com' },
             { title: 'РЕН ТВ', url: 'https://githubusercontent.com' }
         ];
@@ -46,14 +46,16 @@
                             var searchName = channel.title.toLowerCase();
 
                             for (var i = 0; i < lines.length; i++) {
-                                if (lines[i].toLowerCase().indexOf('#extinf') > -1 && lines[i].toLowerCase().indexOf(searchName) > -1) {
-                                    for (var j = i + 1; j < lines.length; j++) {
-                                        var line = lines[j].trim();
-                                        if (line.startsWith('http')) {
-                                            streamUrl = line;
+                                let line = lines[i].trim();
+                                // Ищем строку с названием канала
+                                if (line.toLowerCase().indexOf('#extinf') > -1 && line.toLowerCase().indexOf(searchName) > -1) {
+                                    // Проверяем следующие 3 строки в поисках ссылки
+                                    for (var j = i + 1; j <= i + 3 && j < lines.length; j++) {
+                                        let nextLine = lines[j].trim();
+                                        if (nextLine.startsWith('http')) {
+                                            streamUrl = nextLine;
                                             break;
                                         }
-                                        if (line.startsWith('#EXTINF')) break;
                                     }
                                 }
                                 if (streamUrl) break;
@@ -117,6 +119,4 @@
     
     setInterval(addPlugin, 2000);
 })();
-
-
 

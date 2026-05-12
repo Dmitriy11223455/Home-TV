@@ -19,7 +19,7 @@
         var channels = [
             { title: 'Первый канал', url: 'https://githubusercontent.com' },
             { title: 'ТНТ', url: 'https://githubusercontent.com' },
-            { title: 'ТОП 100', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u' }, //playlist
+            { title: 'ТОП 100', url: 'https://githubusercontent.com' },
             { title: 'СТС', url: 'https://githubusercontent.com' },
             { title: 'РЕН ТВ', url: 'https://githubusercontent.com' }
         ];
@@ -36,12 +36,11 @@
                 card.on('hover:enter', function () {
                     Lampa.Noty.show('Ищу поток для ' + channel.title);
                     
-                    // ИСПРАВЛЕНИЕ: Используем прямой метод запроса, чтобы не было ошибки "not a constructor"
                     $.ajax({
                         url: channel.url,
                         method: 'GET',
                         dataType: 'text',
-                        success: function (data) {
+                        success: function(data) {
                             var lines = data.split('\n');
                             var streamUrl = '';
                             var searchName = channel.title.toLowerCase();
@@ -61,19 +60,21 @@
                             }
 
                             if (streamUrl) {
+                                // ФИНАЛЬНОЕ ИСПРАВЛЕНИЕ ДЛЯ ОБХОДА ОШИБКИ 409
                                 Lampa.Player.play({ 
-                                    url: streamUrl, 
+                                    url: streamUrl.split('|')[0], 
                                     title: channel.title,
                                     headers: {
-                                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'
+                                        'Referer': 'https://mediavitrina.ru',
+                                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
                                     }
                                 });
                             } else {
                                 Lampa.Noty.show('Канал не найден в плейлисте');
                             }
                         },
-                        error: function () {
-                            Lampa.Noty.show('Ошибка загрузки плейлиста. Проверьте CORS.');
+                        error: function() {
+                            Lampa.Noty.show('Ошибка загрузки плейлиста');
                         }
                     });
                 });
@@ -107,6 +108,7 @@
     function addPlugin() {
         if ($('.menu__item[data-action="home_tv"]').length > 0) return;
         var menu_item = $('<li class="menu__item selector" data-action="home_tv">' +
+            '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="#f39c12"/></svg></div>' +
             '<div class="menu__text">HOME TV</div>' +
             '</li>');
         

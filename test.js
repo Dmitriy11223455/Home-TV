@@ -19,7 +19,7 @@
         var channels = [
             { title: 'Первый канал', url: 'https://githubusercontent.com' },
             { title: 'ТНТ', url: 'https://githubusercontent.com' },
-            { title: 'Россия 1', url: 'https://raw.githubusercontent.com/Dmitriy11223455/FREE_IPTV/refs/heads/main/RusTVLive.m3u8' },
+            { title: 'Россия 1', url: 'https://raw.githubusercontent.com/Dmitriy11223455/FREE_IPTV/refs/heads/main/RusTVLive.m3u8 },
             { title: 'СТС', url: 'https://githubusercontent.com' },
             { title: 'РЕН ТВ', url: 'https://githubusercontent.com' }
         ];
@@ -79,6 +79,7 @@
         };
 
         this.render = function () { return html; };
+
         this.active = function () {
             Lampa.Controller.add('home_tv_ctrl', {
                 toggle: function () { 
@@ -91,6 +92,7 @@
             });
             Lampa.Controller.toggle('home_tv_ctrl');
         };
+        
         this.create();
     });
 
@@ -101,13 +103,19 @@
             '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="#f39c12"/></svg></div>' +
             '<div class="menu__text">HOME TV</div>' +
             '</li>');
+        
         menu_item.on('hover:enter click', function () {
             Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin', page: 1 });
         });
+        
         $('.menu .menu__list').append(menu_item);
     }
 
-    Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') addPlugin(); });
+    Lampa.Listener.follow('app', function (e) { 
+        if (e.type == 'ready') addPlugin(); 
+    });
+    
     setInterval(addPlugin, 2000);
 })();
+
 

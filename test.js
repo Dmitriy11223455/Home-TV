@@ -1,12 +1,13 @@
 (function () {
     'use strict';
 
-    // 1. Стили
+    // 1. Стили: добавили оформление иконок и правильное выравнивание
     if (!$('#home-tv-styles').length) {
         $('<style id="home-tv-styles">' +
             '.home-tv-list { padding: 20px; }' +
-            '.home-tv-card { margin-bottom: 10px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; cursor: pointer; border-left: 5px solid #f39c12; }' +
+            '.home-tv-card { display: flex; align-items: center; margin-bottom: 10px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; cursor: pointer; border-left: 5px solid #f39c12; }' +
             '.home-tv-card.focus { background: #f39c12; color: #000; transform: scale(1.02); }' +
+            '.home-tv-card__icon { width: 60px; height: 40px; margin-right: 15px; background-size: contain; background-repeat: no-repeat; background-position: center; flex-shrink: 0; }' +
             '.home-tv-card__title { font-size: 1.4em; font-weight: bold; }' +
         '</style>').appendTo('body');
     }
@@ -16,12 +17,13 @@
         var scroll = new Lampa.Scroll({mask: true, over: true});
         var html = $('<div class="home-tv-list"></div>');
         
+        // Массив каналов с добавленными логотипами (img)
         var channels = [
-            { title: 'Первый канал', url: 'https://githubusercontent.com' },
-            { title: 'ТНТ', url: 'https://githubusercontent.com' },
-            { title: 'ТОП 100', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u' },
-            { title: 'СТС', url: 'https://githubusercontent.com' },
-            { title: 'РЕН ТВ', url: 'https://githubusercontent.com' }
+            { title: 'ПЕРВЫЙ КАНАЛ', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', img: 'https://iptvx.one/picons/pervy.png' },
+            { title: 'ТНТ', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', img: 'https://githubusercontent.com' },
+            { title: 'ТОП 100', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', img: 'https://githubusercontent.com' },
+            { title: 'СТС', url: 'https://githubusercontent.com', img: 'https://githubusercontent.com' },
+            { title: 'РЕН ТВ', url: 'https://githubusercontent.com', img: 'https://githubusercontent.com' }
         ];
 
         this.create = function () {
@@ -29,7 +31,9 @@
             html.empty();
 
             channels.forEach(function (channel) {
+                // Создаем карточку с иконкой и текстом
                 var card = $('<div class="home-tv-card selector">' +
+                    '<div class="home-tv-card__icon" style="background-image: url(' + (channel.img || '') + ')"></div>' +
                     '<div class="home-tv-card__title">' + channel.title + '</div>' +
                 '</div>');
 
@@ -60,7 +64,6 @@
                             }
 
                             if (streamUrl) {
-                                // ФИНАЛЬНОЕ ИСПРАВЛЕНИЕ ДЛЯ ОБХОДА ОШИБКИ 409
                                 Lampa.Player.play({ 
                                     url: streamUrl.split('|')[0], 
                                     title: channel.title,
@@ -99,6 +102,11 @@
                 back: function () { Lampa.Activity.backward(); }
             });
             Lampa.Controller.toggle('home_tv_ctrl');
+
+            // ПРОЛИСТЫВАНИЕ: синхронизация скролла при фокусе
+            html.find('.selector').on('hover:focus', function (e) {
+                scroll.scrollTo(e.target);
+            });
         };
         
         this.create();

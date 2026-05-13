@@ -91,10 +91,38 @@
 
         this.render = function () { return html; };
 
+                this.create = function () {
+            inner.empty();
+            channels.forEach(function (channel) {
+                var card = $('<div class="home-tv-card selector">' +
+                    '<div class="home-tv-card__icon" style="background-image: url(' + (channel.img || '') + ')"></div>' +
+                    '<div class="home-tv-card__title">' + channel.title + '</div>' +
+                '</div>');
+
+                // Логика Кулика: обновление скролла при наведении (hover:focus)
+                card.on('hover:focus', function (e) {
+                    scroll.update($(e.target)); 
+                });
+
+                card.on('hover:enter', function () {
+                    // Ваш код запуска плеера...
+                });
+
+                inner.append(card);
+            });
+
+            // Сначала добавляем контент в скролл, а потом рендерим скролл в html
+            scroll.append(inner);
+            html.append(scroll.render(true)); // true — важный параметр для корректного рендеринга
+            
+            return this.render();
+        };
+
         this.active = function () {
             Lampa.Controller.add('home_tv_ctrl', {
                 toggle: function () { 
                     Lampa.Controller.collectionSet(html); 
+                    // Фокусируемся на первом элементе, как это сделано в Playlist.toggle (стр. 25)
                     Lampa.Controller.collectionFocus(html.find('.selector')[0], html); 
                 },
                 up: function () { Lampa.Controller.move('up'); },
@@ -102,15 +130,8 @@
                 back: function () { Lampa.Activity.backward(); }
             });
             Lampa.Controller.toggle('home_tv_ctrl');
-
-            // ПРОЛИСТЫВАНИЕ: синхронизация скролла при фокусе
-            html.find('.selector').on('hover:focus', function (e) {
-                scroll.scrollTo(e.target);
-            });
         };
-        
-        this.create();
-    });
+
 
     // 3. Добавление в меню
     function addPlugin() {

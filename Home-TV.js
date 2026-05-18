@@ -1,106 +1,160 @@
 (function () {
     'use strict';
 
-    // 1. Добавляем стили, чтобы интерфейс не разваливался
-    $('<style>' +
-        '.home-tv { display: flex; width: 100%; height: 100%; padding: 1.5% 2%; box-sizing: border-box; }' +
-        '.home-tv__menu { width: 20%; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 20px; }' +
-        '.home-tv__list { width: 45%; padding: 0 30px; }' +
-        '.home-tv__info { width: 35%; padding: 20px; background: rgba(255,255,255,0.03); border-radius: 15px; }' +
-        '.home-tv-item { display: flex; align-items: center; padding: 12px 20px; background: rgba(255,255,255,0.07); border-radius: 10px; margin-bottom: 10px; border: 2px solid transparent; }' +
-        '.home-tv-item.focus { border-color: #fff; background: rgba(255,255,255,0.15); transform: scale(1.03); }' +
-        '.home-tv-item__num { font-size: 1.2em; color: #ffeb3b; margin-right: 15px; font-weight: bold; }' +
-        '.home-tv-info__title { font-size: 2.5em; margin-bottom: 15px; color: #fff; }' +
-        '.home-tv-menu__item { padding: 10px; opacity: 0.5; font-size: 1.3em; }' +
-        '.home-tv-menu__item.focus { opacity: 1; color: #ffeb3b; }' +
-    '</style>').appendTo('body');
+    // 1. Стили
+    if (!$('#home-tv-styles').length) {
+        $('<style id="home-tv-styles">' +
+            '.home-tv-list { padding: 20px; height: 100%; position: relative; overflow: hidden; }' +
+            '.home-tv-card { display: flex; align-items: center; margin-bottom: 10px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; cursor: pointer; border-left: 5px solid #f39c12; }' +
+            '.home-tv-card.focus { background: #f39c12; color: #000; transform: scale(1.02); }' +
+            '.home-tv-card__icon { width: 60px; height: 40px; margin-right: 15px; background-size: contain; background-repeat: no-repeat; background-position: center; flex-shrink: 0; }' +
+            '.home-tv-card__title { font-size: 1.4em; font-weight: bold; }' +
+        '</style>').appendTo('body');
+    }
 
+    // 2. Компонент
     Lampa.Component.add('home_tv_plugin', function (object, exam) {
-        var _this = this;
         var scroll = new Lampa.Scroll({mask: true, over: true});
-        var items = [];
-        var html = $('<div class="home-tv"></div>');
-        var menu = $('<div class="home-tv__menu"></div>');
-        var list = $('<div class="home-tv__list"></div>');
-        var info = $('<div class="home-tv__info"></div>');
+        var html   = $('<div class="home-tv-list"></div>');
+        var inner  = $('<div></div>');
+        
+        // Автоматически определяем адрес вашего воркера, через который запущен плагин
+        var workerUrl = window.location.origin + '/?url=';
 
-        this.create = function () {
-            // Категории (левая колонка)
-            ['Все каналы', 'Основные', 'Кино'].forEach(function(cat) {
-                menu.append('<div class="home-tv-menu__item">' + cat + '</div>');
-            });
+        var channels = [
+            { title: 'ПЕРВЫЙ КАНАЛ', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', img: 'https://iptvx.one/picons/pervy.png' },
+            { title: 'ТНТ', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', img: 'https://iptvx.one/picons/tnt.png' },
+            { title: 'ТОП 100', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', img: 'https://iptvx.one/picons/rossia1.png' },
+            { title: 'СТС Int.', url: 'https://raw.githubusercontent.com/smolnp/IPTVru/refs/heads/gh-pages/IPTVru.m3u', img: 'https://iptvx.one/picons/sts-int.png' },
+            { title: 'РЕН ТВ', url: 'https://raw.githubusercontent.com/Dmitriy11223455/my-tv-grabber/refs/heads/main/playlist.m3u', img: 'https://iptvx.one/picons/18.png' },
+            { title: 'МАТЧ ТВ!', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', img: 'https://iptvx.one/picons/match-tv.png' },
+            { title: 'НТВ', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', img: 'https://iptvx.one/picons/ntv.png' },
+            { title: 'Россия 24', url: 'https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/ru_televizor24.m3u', img: 'https://iptvx.one/picons/rossia-24.png' },
+            { title: 'РТР Планета', url: 'https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/ru_smotrim.m3u', img: '' },
+            { title: 'Россия-РТР', url: 'https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/ru_televizor24.m3u', img: '' },
+            { title: 'Ю HD', url: 'https://raw.githubusercontent.com/smolnp/IPTVru/refs/heads/gh-pages/IPTVru.m3u', img: 'https://iptvx.one/picons/yu.png' },
+            { title: 'Чё!', url: 'https://raw.githubusercontent.com/smolnp/IPTVru/refs/heads/gh-pages/IPTVru.m3u', img: 'https://iptvx.one/picons/che.png' },
+            { title: 'Россия К', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', img: 'https://iptvx.one/picons/kultura.png' },
+            { title: 'СТС', url: 'https://raw.githubusercontent.com/smolnp/IPTVru/refs/heads/gh-pages/IPTVru.m3u', img: 'https://iptvx.one/picons/sts.png' },
+            { title: 'СТС Love', url: 'https://raw.githubusercontent.com/smolnp/IPTVru/refs/heads/gh-pages/IPTVru.m3u', img: 'https://iptvx.one/picons/sts-love.png' },
+        ];
 
-            var my_channels = [
-                { title: 'Первый канал', url: 'https://berezka.live', desc: 'Главный эфир страны. Актуальные новости и шоу.' },
-                { title: 'ТНТ', url: 'https://site-b.net', desc: 'Развлекательный контент, сериалы и юмор.' }
-            ];
-
-            my_channels.forEach(function (channel, index) {
-                // ВАЖНО: класс selector обязателен для пульта
-                var card = $('<div class="home-tv-item selector">' +
-                                '<div class="home-tv-item__num">' + (index + 1).toString().padStart(3, '0') + '</div>' +
-                                '<div class="home-tv-item__name">' + channel.title + '</div>' +
-                             '</div>');
-                
-                // Действие при наведении пульта
-                card.on('hover:focus', function () {
-                    info.html('<div class="home-tv-info__title">' + channel.title + '</div>' +
-                              '<div class="home-tv-info__desc" style="font-size:1.2em; opacity:0.8">' + channel.desc + '</div>');
-                    scroll.scrollTo(card); // Автопрокрутка
-                });
-
-                // Действие при нажатии OK
-                card.on('hover:enter', function () {
-                    Lampa.Noty.show('Запуск потока...');
-                    var network = new Lampa.Reguest();
-                    network.native('http://cub.watch' + channel.url, function (res) {
-                        var match = /(https?:\/\/[^"']+\.m3u8[^"']*)/i.exec(res);
-                        if (match) Lampa.Player.play({ url: match[0], title: channel.title });
-                    }, function(){ Lampa.Noty.show('Ошибка прокси'); }, false, {dataType: 'text'});
-                });
-
-                list.append(card);
-                items.push(card);
-            });
-
-            html.append(menu).append(list).append(info);
-            scroll.append(list);
+        this.render = function () { 
+            return html; 
         };
 
-        this.render = function () { return html; };
+        // КРИТИЧЕСКИЙ МЕТОД: Исправляет ошибку запуска компонента в Lampa
+        this.start = function () {
+            // Оставляем пустым, так как логика уже вызывается в create()
+        };
+
+        this.create = function () {
+            inner.empty();
+
+            channels.forEach(function (channel) {
+                var card = $('<div class="home-tv-card selector">' +
+                    '<div class="home-tv-card__icon" style="background-image: url(' + (channel.img || '') + ')"></div>' +
+                    '<div class="home-tv-card__title">' + channel.title + '</div>' +
+                '</div>');
+
+                card.on('hover:focus', function (e) {
+                    scroll.update($(e.target)); 
+                });
+
+                card.on('hover:enter', function () {
+                    Lampa.Noty.show('Ищу поток для ' + channel.title);
+                    
+                    // Проксируем запрос к m3u файлу через ваш воркер
+                    var proxiedM3uUrl = workerUrl + encodeURIComponent(channel.url);
+
+                    $.ajax({
+                        url: proxiedM3uUrl,
+                        method: 'GET',
+                        dataType: 'text',
+                        success: function(data) {
+                            var lines = data.split('\n');
+                            var streamUrl = '';
+                            var searchName = channel.title.toLowerCase();
+
+                            for (var i = 0; i < lines.length; i++) {
+                                let line = lines[i].trim();
+                                if (line.toLowerCase().indexOf('#extinf') > -1 && line.toLowerCase().indexOf(searchName) > -1) {
+                                    for (var j = i + 1; j <= i + 3 && j < lines.length; j++) {
+                                        let nextLine = lines[j].trim();
+                                        if (nextLine.startsWith('http')) {
+                                            streamUrl = nextLine;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (streamUrl) break;
+                            }
+
+                            if (streamUrl) {
+                                var cleanUrl = streamUrl.split('|')[0];
+                                // Автоматически заворачиваем видео-поток в воркер для обхода CORS/Геоблока
+                                var finalProxiedUrl = workerUrl + encodeURIComponent(cleanUrl);
+
+                                Lampa.Player.play({ 
+                                    url: finalProxiedUrl, 
+                                    title: channel.title
+                                });
+                            } else {
+                                Lampa.Noty.show('Канал не найден');
+                            }
+                        },
+                        error: function() {
+                            Lampa.Noty.show('Ошибка загрузки плейлиста');
+                        }
+                    });
+                });
+
+                inner.append(card);
+            });
+
+            scroll.append(inner);
+            html.append(scroll.render(true));
+            
+            return this.render();
+        };
 
         this.active = function () {
-            Lampa.Controller.add('content', {
-                toggle: function () {
-                    Lampa.Controller.collectionSet(html);
-                    Lampa.Controller.collectionFocus(items[0], html); // Фокус на первый элемент
+            Lampa.Controller.add('home_tv_ctrl', {
+                toggle: function () { 
+                    Lampa.Controller.collectionSet(html); 
+                    Lampa.Controller.collectionFocus(html.find('.selector')[0], html); 
                 },
-                up: function () { Lampa.Controller.move('up'); },
+                up:   function () { Lampa.Controller.move('up'); },
                 down: function () { Lampa.Controller.move('down'); },
                 back: function () { Lampa.Activity.backward(); }
             });
-            Lampa.Controller.toggle('content');
+            Lampa.Controller.toggle('home_tv_ctrl');
         };
 
         this.create();
     });
 
-    function injectMenu() {
-        if ($('li[data-action="home_tv"]').length > 0) return;
-        var menu_list = $('.menu__list, .menu__items, .menu .list');
-        if (menu_list.length > 0) {
-            var item = $('<li class="menu__item selector" data-action="home_tv">' +
-                '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="white"/></svg></div>' +
-                '<div class="menu__text">HOME TV</div>' +
-                '</li>');
-            item.on('hover:enter click', function () {
-                $('body').removeClass('menu--open');
-                Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin' });
-            });
-            var set = menu_list.find('[data-action="settings"]');
-            if (set.length > 0) set.before(item); else menu_list.append(item);
-        }
+    function addPlugin() {
+        if ($('.menu__item[data-action="home_tv"]').length > 0) return;
+        var menu_item = $('<li class="menu__item selector" data-action="home_tv">' +
+            '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="#f39c12"/></svg></div>' +
+            '<div class="menu__text">HOME TV</div>' +
+            '</li>');
+        
+        menu_item.on('hover:enter click', function () {
+            Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin', page: 1 });
+        });
+        
+        $('.menu .menu__list').append(menu_item);
     }
-    setInterval(injectMenu, 2000);
+
+    // Корректная регистрация и запуск плагина в экосистеме Lampa
+    if (window.Lampa) addPlugin();
+    else {
+        Lampa.Listener.follow('app', function (e) {
+            if (e.type == 'ready') addPlugin();
+        });
+    }
 })();
+
 

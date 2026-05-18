@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    // 1. Стили плагина
+    // 1. Стили
     if (!$('#home-tv-styles').length) {
         $('<style id="home-tv-styles">' +
             '.home-tv-list { padding: 20px; height: 100%; position: relative; overflow: hidden; }' +
@@ -12,15 +12,15 @@
         '</style>').appendTo('body');
     }
 
-    // 2. Компонент для Lampa
+    // 2. Компонент
     Lampa.Component.add('home_tv_plugin', function (object, exam) {
         var scroll = new Lampa.Scroll({mask: true, over: true});
         var html   = $('<div class="home-tv-list"></div>');
         var inner  = $('<div></div>');
         
-        // Автоматически определяем адрес вашего воркера, через который запущен плагин
+        // Автоматично визначаємо адресу вашого воркера
         var workerUrl = window.location.origin + '/?url=';
-
+        
         var channels = [
             { title: 'ПЕРВЫЙ КАНАЛ', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', img: 'https://iptvx.one/picons/pervy.png' },
             { title: 'ТНТ', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', img: 'https://iptvx.one/picons/tnt.png' },
@@ -43,9 +43,9 @@
             return html; 
         };
 
-        // Заглушка обязательного метода для ядра Lampa
+        // Фікс помилки UI Lampa (Обов'язковий метод для запуску вікна)
         this.start = function () {
-            // Метод обязательно должен присутствовать, чтобы Lampa не выдавала ошибку "start is not a function"
+            // Залишаємо порожнім, бо створення вже викликається нижче
         };
 
         this.create = function () {
@@ -57,16 +57,15 @@
                     '<div class="home-tv-card__title">' + channel.title + '</div>' +
                 '</div>');
 
-                // Обновление фокуса скролла
+                // Обновление скролла при наведении
                 card.on('hover:focus', function (e) {
                     scroll.update($(e.target)); 
                 });
 
-                // Обработчик выбора канала
                 card.on('hover:enter click', function () {
                     Lampa.Noty.show('Ищу поток для ' + channel.title);
                     
-                    // Загружаем плейлист через ваш прокси
+                    // Завантажуємо файл .m3u через ваш прокси
                     var proxiedM3uUrl = workerUrl + encodeURIComponent(channel.url);
 
                     $.ajax({
@@ -77,51 +76,31 @@
                             var lines = data.split('\n');
                             var streamUrl = '';
                             
-                            // Очищаем поисковое имя от пробелов, спецсимволов и "hd" для умного сравнения
-                            var searchName = channel.title.toLowerCase().replace(/[^a-zа-яё0-9]/gi, '').replace('hd', '').trim();
+                            // Приводимо назву до нижнього регістру
+                            var searchName = channel.title.toLowerCase();
 
                             for (var i = 0; i < lines.length; i++) {
                                 let line = lines[i].trim();
-                                
-                                if (line.toLowerCase().indexOf('#extinf') > -1) {
-                                    // Очищаем строку тега для точного совпадения
-                                    let cleanLine = line.toLowerCase().replace(/[^a-zа-яё0-9]/gi, '');
-                                    
-                                    if (cleanLine.indexOf(searchName) > -1) {
-                                        // Забираем URL потока из строк ниже
-                                        for (var j = i + 1; j <= i + 4 && j < lines.length; j++) {
-                                            let nextLine = lines[j].trim();
-                                            if (nextLine.substring(0, 4) === 'http') {
-                                                streamUrl = nextLine;
-                                                break;
-                                            }
+                                if (line.toLowerCase().indexOf('#extinf') > -1 && line.toLowerCase().indexOf(searchName) > -1) {
+                                    for (var j = i + 1; j <= i + 3 && j < lines.length; j++) {
+                                        let nextLine = lines[j].trim();
+                                        if (nextLine.startsWith('http')) {
+                                            streamUrl = nextLine;
+                                            break;
                                         }
                                     }
                                 }
                                 if (streamUrl) break;
                             }
 
-                            // Фолбек: если это моно-плейлисты (например iptv-org), берем первое найденное http посилання
-                            if (!streamUrl && (channel.url.indexOf('iptv-org') > -1 || lines.length < 30)) {
-                                for (var k = 0; k < lines.length; k++) {
-                                    let fallbackLine = lines[k].trim();
-                                    if (fallbackLine.substring(0, 4) === 'http') {
-                                        streamUrl = fallbackLine;
-                                        break;
-                                    }
-                                }
-                            }
-
                             if (streamUrl) {
-                                // Фикс: Сначала берем первый элемент до разделителя параметров, затем вызываем .trim()
-                                var parts = streamUrl.split('|');
-                                var cleanUrl = parts[0].trim();
+                                var rawUrl = streamUrl.split('|')[0].trim();
                                 
-                                // Автоматически оборачиваем финальное видео в прокси-воркер
-                                var finalProxiedUrl = workerUrl + encodeURIComponent(cleanUrl);
+                                // Проксуємо сам стрим перед відтворенням
+                                var finalUrl = workerUrl + encodeURIComponent(rawUrl);
 
                                 Lampa.Player.play({ 
-                                    url: finalProxiedUrl, 
+                                    url: finalUrl, 
                                     title: channel.title,
                                     headers: {
                                         'Referer': 'https://mediavitrina.ru',
@@ -129,11 +108,11 @@
                                     }
                                 });
                             } else {
-                                Lampa.Noty.show('Канал не найден в плейлисте');
+                                Lampa.Noty.show('Канал не найден');
                             }
                         },
                         error: function() {
-                            Lampa.Noty.show('Ошибка загрузки плейлиста через прокси');
+                            Lampa.Noty.show('Ошибка загрузки плейлиста');
                         }
                     });
                 });
@@ -163,7 +142,6 @@
         this.create();
     });
 
-    // 3. Интеграция плагина в боковое меню Lampa
     function addPlugin() {
         if ($('.menu__item[data-action="home_tv"]').length > 0) return;
         var menu_item = $('<li class="menu__item selector" data-action="home_tv">' +

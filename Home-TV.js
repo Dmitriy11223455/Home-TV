@@ -9,34 +9,85 @@
             '.home-tv-card.focus { background: #f39c12; color: #000; transform: scale(1.02); }' +
             '.home-tv-card__icon { width: 60px; height: 40px; margin-right: 15px; background-size: contain; background-repeat: no-repeat; background-position: center; flex-shrink: 0; }' +
             '.home-tv-card__title { font-size: 1.4em; font-weight: bold; }' +
-        '</style>').appendTo('body');
+            '</style>').appendTo('body');
     }
 
     // 2. Компонент плагина
     Lampa.Component.add('home_tv_plugin', function (object, exam) {
         var scroll = new Lampa.Scroll({mask: true, over: true});
-        var html   = $('<div class="home-tv-list"></div>');
-        var inner  = $('<div></div>');
+        var html = $('<div class="home-tv-list"></div>');
+        var inner = $('<div></div>');
         
+        // Массив каналов с выровненными отступами
         var channels = [
-            { title: 'ПЕРВЫЙ КАНАЛ', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', img: 'https://iptvx.one/picons/pervy.png' },
-            { title: 'ТНТ', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', img: 'https://iptvx.one/picons/tnt.png' },
-            { title: 'Россия 1', url: 'https://raw.githubusercontent.com/smolnp/IPTVru/refs/heads/gh-pages/IPTVru.m3u', img: 'https://iptvx.one/picons/rossia1.png' },
-            { title: 'СТС Int.', url: 'https://raw.githubusercontent.com/smolnp/IPTVru/refs/heads/gh-pages/IPTVru.m3u', img: 'https://iptvx.one/picons/sts-int.png' },
-            { title: 'РЕН ТВ', url: 'https://raw.githubusercontent.com/Dmitriy11223455/my-tv-grabber/refs/heads/main/playlist.m3u', img: 'https://iptvx.one/picons/18.png' },
-            { title: 'МАТЧ ТВ!', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', img: 'https://iptvx.one/picons/match-tv.png' },
-            { title: 'НТВ', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', img: 'https://iptvx.one/picons/ntv.png' },
-            { title: 'Россия 24', url: 'https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/ru_televizor24.m3u', img: 'https://iptvx.one/picons/rossia-24.png' },
-            { title: 'РТР Планета', url: 'https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/ru_smotrim.m3u', img: 'https://iptvx.one' },
-            { title: 'Россия-РТР', url: 'https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/ru_televizor24.m3u', img: 'https://iptvx.one' },
-            { title: 'Ю HD', url: 'https://raw.githubusercontent.com/smolnp/IPTVru/refs/heads/gh-pages/IPTVru.m3u', img: 'https://iptvx.one/picons/yu.png' },
-            { title: 'Чё!', url: 'https://raw.githubusercontent.com/smolnp/IPTVru/refs/heads/gh-pages/IPTVru.m3u', img: 'https://iptvx.one/picons/che.png' },
-            { title: 'Россия К', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', img: 'https://iptvx.one/picons/kultura.png' },
-            { title: 'СТС', url: 'https://raw.githubusercontent.com/smolnp/IPTVru/refs/heads/gh-pages/IPTVru.m3u', img: 'https://iptvx.one/picons/sts.png' },
-            { title: 'СТС Love', url: 'https://raw.githubusercontent.com/smolnp/IPTVru/refs/heads/gh-pages/IPTVru.m3u', img: 'https://iptvx.one/picons/sts-love.png' },
+            { 
+                title: 'ПЕРВЫЙ КАНАЛ', 
+                url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
+                img: 'https://iptvx.one/picons/pervy.png',
+                ref: 'https://televizor24tochka.ru',
+                ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
+            },
+            { 
+                title: 'Россия 1', 
+                url: 'https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/ru_televizor24.m3u', 
+                img: 'https://iptvx.one/picons/rossia1.png',
+                ref: 'https://televizor24tochka.ru',
+                ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
+            },
+            { 
+                title: 'Россия 24', 
+                url: 'https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/ru_televizor24.m3u', 
+                img: 'https://iptvx.one/picons/rossia-24.png',
+                ref: 'https://televizor24tochka.ru',
+                ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
+            },
+            { 
+                title: 'НТВ', 
+                url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
+                img: 'https://iptvx.one/picons/ntv.png',
+                ref: 'https://televizor24tochka.ru',
+                ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
+            },
+            { 
+                title: 'СТС', 
+                url: 'https://raw.githubusercontent.com/smolnp/IPTVru/refs/heads/gh-pages/IPTVru.m3u', 
+                img: 'https://iptvx.one/picons/sts.png',
+                ref: 'https://televizor24tochka.ru',
+                ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
+            },
+            { 
+                title: 'МАТЧ ТВ!', 
+                url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
+                img: 'https://iptvx.one/picons/match-tv.png',
+                ref: 'https://televizor24tochka.ru',
+                ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
+            },
+            { 
+                title: 'ТНТ', 
+                url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
+                img: 'https://iptvx.one/picons/tnt.png',
+                ref: 'https://televizor24tochka.ru',
+                ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
+            },
+            { 
+                title: 'РЕН ТВ', 
+                url: 'https://raw.githubusercontent.com/Dmitriy11223455/my-tv-grabber/refs/heads/main/playlist.m3u', 
+                img: 'https://iptvx.one/picons/18.png',
+                ref: 'https://televizor24tochka.ru',
+                ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
+            },
+            { 
+                title: 'Россия К', 
+                url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
+                img: 'https://iptvx.one/picons/kultura.png',
+                ref: 'https://televizor24tochka.ru',
+                ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
+            }
         ];
 
-        this.render = function () { return html; };
+        this.render = function () { 
+            return html; 
+        };
 
         this.create = function () {
             inner.empty();
@@ -44,9 +95,9 @@
                 var card = $('<div class="home-tv-card selector">' +
                     '<div class="home-tv-card__icon" style="background-image: url(' + (channel.img || '') + ')"></div>' +
                     '<div class="home-tv-card__title">' + channel.title + '</div>' +
-                '</div>');
-
-                card.on('hover:focus', function (e) {
+                    '</div>');
+                
+                card.on('hover:focus', function (e) { 
                     scroll.update($(e.target)); 
                 });
 
@@ -61,11 +112,11 @@
                             var lines = data.split('\n');
                             var streamUrl = '';
                             var searchName = channel.title.toLowerCase();
-
+                            
                             for (var i = 0; i < lines.length; i++) {
                                 let line = lines[i].trim();
                                 if (line.toLowerCase().indexOf('#extinf') > -1 && line.toLowerCase().indexOf(searchName) > -1) {
-                                    for (var j = i + 1; j < lines.length; j++) {
+                                    for (var j = i + 1; j < Math.min(i + 10, lines.length); j++) {
                                         let nextLine = lines[j].trim();
                                         if (nextLine.startsWith('http')) {
                                             streamUrl = nextLine;
@@ -78,10 +129,11 @@
 
                             if (streamUrl) {
                                 Lampa.Player.play({ 
-                                    url: streamUrl.split('|')[0], 
+                                    url: streamUrl.split('|'), 
                                     title: channel.title,
                                     headers: {
-                                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
+                                        'Referer': channel.ref,
+                                        'User-Agent': channel.ua
                                     }
                                 });
                             } else {
@@ -93,10 +145,8 @@
                         }
                     });
                 });
-
                 inner.append(card);
             });
-
             scroll.append(inner);
             html.append(scroll.render(true));
             return this.render();
@@ -106,11 +156,11 @@
             Lampa.Controller.add('home_tv_ctrl', {
                 toggle: function () { 
                     Lampa.Controller.collectionSet(html); 
-                    Lampa.Controller.collectionFocus(html.find('.selector')[0], html); 
+                    Lampa.Controller.collectionFocus(html.find('.selector'), html); 
                 },
-                up:    function () { Lampa.Controller.move('up'); },
-                down:  function () { Lampa.Controller.move('down'); },
-                back:  function () { Lampa.Activity.backward(); }
+                up: function () { Lampa.Controller.move('up'); },
+                down: function () { Lampa.Controller.move('down'); },
+                back: function () { Lampa.Activity.backward(); }
             });
             Lampa.Controller.toggle('home_tv_ctrl');
         };
@@ -118,7 +168,7 @@
         this.create();
     });
 
-    // 3. Добавление в меню
+    // 3. Меню
     function addPlugin() {
         if ($('.menu__item[data-action="home_tv"]').length > 0) return;
         var menu_item = $('<li class="menu__item selector" data-action="home_tv">' +
@@ -134,13 +184,9 @@
     }
 
     if (window.appready) addPlugin();
-    else {
-        Lampa.Listener.follow('app', function (e) {
-            if (e.type == 'ready') addPlugin();
-        });
-    }
-
+    else Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') addPlugin(); });
 })();
+
 
 
 

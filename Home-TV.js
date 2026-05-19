@@ -18,11 +18,10 @@
         var html = $('<div class="home-tv-list"></div>');
         var inner = $('<div></div>');
         
-        // Массив каналов с вашими оригинальными UA и Ref + добавлен поиск для точного парсинга
+        // Ваш финальный массив каналов (строго оригинал)
         var channels = [
             { 
                 title: 'ПЕРВЫЙ КАНАЛ', 
-                search: 'perv',
                 url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
                 img: 'https://iptvx.one/picons/pervy.png',
                 ref: 'https://televizor24tochka.ru',
@@ -30,7 +29,6 @@
             },
             { 
                 title: 'Россия 1', 
-                search: 'rossia1',
                 url: 'https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/ru_televizor24.m3u', 
                 img: 'https://iptvx.one/picons/rossia1.png',
                 ref: 'https://televizor24tochka.ru',
@@ -38,7 +36,6 @@
             },
             { 
                 title: 'Россия 24', 
-                search: 'rossia24',
                 url: 'https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/ru_televizor24.m3u', 
                 img: 'https://iptvx.one/picons/rossia-24.png',
                 ref: 'https://televizor24tochka.ru',
@@ -46,7 +43,6 @@
             },
             { 
                 title: 'НТВ', 
-                search: 'ntv',
                 url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
                 img: 'https://iptvx.one/picons/ntv.png',
                 ref: 'https://televizor24tochka.ru',
@@ -54,7 +50,6 @@
             },
             { 
                 title: 'СТС', 
-                search: 'sts',
                 url: 'https://raw.githubusercontent.com/smolnp/IPTVru/refs/heads/gh-pages/IPTVru.m3u', 
                 img: 'https://iptvx.one/picons/sts.png',
                 ref: 'https://televizor24tochka.ru',
@@ -62,7 +57,6 @@
             },
             { 
                 title: 'МАТЧ ТВ!', 
-                search: 'match',
                 url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
                 img: 'https://iptvx.one/picons/match-tv.png',
                 ref: 'https://televizor24tochka.ru',
@@ -70,7 +64,6 @@
             },
             { 
                 title: 'ТНТ', 
-                search: 'tnt',
                 url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
                 img: 'https://iptvx.one/picons/tnt.png',
                 ref: 'https://televizor24tochka.ru',
@@ -78,7 +71,6 @@
             },
             { 
                 title: 'РЕН ТВ', 
-                search: 'ren',
                 url: 'https://raw.githubusercontent.com/Dmitriy11223455/my-tv-grabber/refs/heads/main/playlist.m3u', 
                 img: 'https://iptvx.one/picons/18.png',
                 ref: 'https://televizor24tochka.ru',
@@ -86,7 +78,6 @@
             },
             { 
                 title: 'Россия К', 
-                search: 'kultur',
                 url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
                 img: 'https://iptvx.one/picons/kultura.png',
                 ref: 'https://televizor24tochka.ru',
@@ -115,12 +106,12 @@
                         success: function(data) {
                             var lines = data.split('\n');
                             var streamUrl = '';
-                            var searchName = channel.search.toLowerCase();
+                            var searchName = channel.title.toLowerCase();
                             
                             for (var i = 0; i < lines.length; i++) {
                                 let line = lines[i].trim();
                                 if (line.toLowerCase().indexOf('#extinf') > -1 && line.toLowerCase().indexOf(searchName) > -1) {
-                                    for (var j = i + 1; j < Math.min(i + 5, lines.length); j++) {
+                                    for (var j = i + 1; j < Math.min(i + 10, lines.length); j++) {
                                         let nextLine = lines[j].trim();
                                         if (nextLine.startsWith('http')) {
                                             streamUrl = nextLine.split('|')[0].trim();
@@ -132,7 +123,7 @@
                             }
 
                             if (streamUrl) {
-                                // Склеиваем ваши оригинальные заголовки через пайп для плеера Lampa
+                                // Оригинальные заголовки, склеенные в понятный для Lampa формат ссылки
                                 var formattedUrl = streamUrl + '|User-Agent=' + encodeURIComponent(channel.ua) + '&Referer=' + encodeURIComponent(channel.ref);
 
                                 Lampa.Player.play({ 
@@ -140,7 +131,7 @@
                                     title: channel.title
                                 });
                             } else {
-                                Lampa.Noty.show('Канал не найден в плейлисте');
+                                Lampa.Noty.show('Канал не найден');
                             }
                         },
                         error: function() { Lampa.Noty.show('Ошибка загрузки плейлиста'); }

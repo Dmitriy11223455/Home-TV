@@ -18,7 +18,7 @@
         var html = $('<div class="home-tv-list"></div>');
         var inner = $('<div></div>');
         
-        // Массив каналов с выровненными отступами
+        // Ваш финальный массив каналов
         var channels = [
             { 
                 title: 'ПЕРВЫЙ КАНАЛ', 
@@ -85,9 +85,7 @@
             }
         ];
 
-        this.render = function () { 
-            return html; 
-        };
+        this.render = function () { return html; };
 
         this.create = function () {
             inner.empty();
@@ -97,13 +95,10 @@
                     '<div class="home-tv-card__title">' + channel.title + '</div>' +
                     '</div>');
                 
-                card.on('hover:focus', function (e) { 
-                    scroll.update($(e.target)); 
-                });
+                card.on('hover:focus', function (e) { scroll.update($(e.target)); });
 
                 card.on('hover:enter', function () {
                     Lampa.Noty.show('Поиск потока: ' + channel.title);
-                    
                     $.ajax({
                         url: channel.url,
                         method: 'GET',
@@ -119,7 +114,8 @@
                                     for (var j = i + 1; j < Math.min(i + 10, lines.length); j++) {
                                         let nextLine = lines[j].trim();
                                         if (nextLine.startsWith('http')) {
-                                            streamUrl = nextLine;
+                                            // Получаем чистую строку без лишних символов
+                                            streamUrl = nextLine.split('|')[0].trim();
                                             break;
                                         }
                                     }
@@ -129,7 +125,7 @@
 
                             if (streamUrl) {
                                 Lampa.Player.play({ 
-                                    url: streamUrl.split('|'), 
+                                    url: streamUrl, // Передаем как строку для избежания ошибки .replace
                                     title: channel.title,
                                     headers: {
                                         'Referer': channel.ref,
@@ -137,12 +133,10 @@
                                     }
                                 });
                             } else {
-                                Lampa.Noty.show('Канал не найден в плейлисте');
+                                Lampa.Noty.show('Канал не найден');
                             }
                         },
-                        error: function() {
-                            Lampa.Noty.show('Ошибка загрузки плейлиста');
-                        }
+                        error: function() { Lampa.Noty.show('Ошибка загрузки плейлиста'); }
                     });
                 });
                 inner.append(card);
@@ -164,7 +158,6 @@
             });
             Lampa.Controller.toggle('home_tv_ctrl');
         };
-
         this.create();
     });
 
@@ -175,17 +168,16 @@
             '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="#f39c12"/></svg></div>' +
             '<div class="menu__text">HOME TV</div>' +
             '</li>');
-        
         menu_item.on('hover:enter click', function () {
             Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin', page: 1 });
         });
-        
         $('.menu .menu__list').append(menu_item);
     }
 
     if (window.appready) addPlugin();
     else Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') addPlugin(); });
 })();
+
 
 
 

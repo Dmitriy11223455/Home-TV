@@ -18,10 +18,11 @@
         var html = $('<div class="home-tv-list"></div>');
         var inner = $('<div></div>');
         
-        // Ваш финальный массив каналов
+        // Массив каналов с вашими оригинальными UA и Ref + добавлен поиск для точного парсинга
         var channels = [
             { 
                 title: 'ПЕРВЫЙ КАНАЛ', 
+                search: 'perv',
                 url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
                 img: 'https://iptvx.one/picons/pervy.png',
                 ref: 'https://televizor24tochka.ru',
@@ -29,6 +30,7 @@
             },
             { 
                 title: 'Россия 1', 
+                search: 'rossia1',
                 url: 'https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/ru_televizor24.m3u', 
                 img: 'https://iptvx.one/picons/rossia1.png',
                 ref: 'https://televizor24tochka.ru',
@@ -36,6 +38,7 @@
             },
             { 
                 title: 'Россия 24', 
+                search: 'rossia24',
                 url: 'https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/ru_televizor24.m3u', 
                 img: 'https://iptvx.one/picons/rossia-24.png',
                 ref: 'https://televizor24tochka.ru',
@@ -43,6 +46,7 @@
             },
             { 
                 title: 'НТВ', 
+                search: 'ntv',
                 url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
                 img: 'https://iptvx.one/picons/ntv.png',
                 ref: 'https://televizor24tochka.ru',
@@ -50,6 +54,7 @@
             },
             { 
                 title: 'СТС', 
+                search: 'sts',
                 url: 'https://raw.githubusercontent.com/smolnp/IPTVru/refs/heads/gh-pages/IPTVru.m3u', 
                 img: 'https://iptvx.one/picons/sts.png',
                 ref: 'https://televizor24tochka.ru',
@@ -57,6 +62,7 @@
             },
             { 
                 title: 'МАТЧ ТВ!', 
+                search: 'match',
                 url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
                 img: 'https://iptvx.one/picons/match-tv.png',
                 ref: 'https://televizor24tochka.ru',
@@ -64,6 +70,7 @@
             },
             { 
                 title: 'ТНТ', 
+                search: 'tnt',
                 url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
                 img: 'https://iptvx.one/picons/tnt.png',
                 ref: 'https://televizor24tochka.ru',
@@ -71,6 +78,7 @@
             },
             { 
                 title: 'РЕН ТВ', 
+                search: 'ren',
                 url: 'https://raw.githubusercontent.com/Dmitriy11223455/my-tv-grabber/refs/heads/main/playlist.m3u', 
                 img: 'https://iptvx.one/picons/18.png',
                 ref: 'https://televizor24tochka.ru',
@@ -78,6 +86,7 @@
             },
             { 
                 title: 'Россия К', 
+                search: 'kultur',
                 url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
                 img: 'https://iptvx.one/picons/kultura.png',
                 ref: 'https://televizor24tochka.ru',
@@ -97,7 +106,7 @@
                 
                 card.on('hover:focus', function (e) { scroll.update($(e.target)); });
 
-                card.on('hover:enter', function () {
+                card.on('hover:enter click', function () {
                     Lampa.Noty.show('Поиск потока: ' + channel.title);
                     $.ajax({
                         url: channel.url,
@@ -106,15 +115,14 @@
                         success: function(data) {
                             var lines = data.split('\n');
                             var streamUrl = '';
-                            var searchName = channel.title.toLowerCase();
+                            var searchName = channel.search.toLowerCase();
                             
                             for (var i = 0; i < lines.length; i++) {
                                 let line = lines[i].trim();
                                 if (line.toLowerCase().indexOf('#extinf') > -1 && line.toLowerCase().indexOf(searchName) > -1) {
-                                    for (var j = i + 1; j < Math.min(i + 10, lines.length); j++) {
+                                    for (var j = i + 1; j < Math.min(i + 5, lines.length); j++) {
                                         let nextLine = lines[j].trim();
                                         if (nextLine.startsWith('http')) {
-                                            // Получаем чистую строку без лишних символов
                                             streamUrl = nextLine.split('|')[0].trim();
                                             break;
                                         }
@@ -124,16 +132,15 @@
                             }
 
                             if (streamUrl) {
+                                // Склеиваем ваши оригинальные заголовки через пайп для плеера Lampa
+                                var formattedUrl = streamUrl + '|User-Agent=' + encodeURIComponent(channel.ua) + '&Referer=' + encodeURIComponent(channel.ref);
+
                                 Lampa.Player.play({ 
-                                    url: streamUrl, // Передаем как строку для избежания ошибки .replace
-                                    title: channel.title,
-                                    headers: {
-                                        'Referer': channel.ref,
-                                        'User-Agent': channel.ua
-                                    }
+                                    url: formattedUrl,
+                                    title: channel.title
                                 });
                             } else {
-                                Lampa.Noty.show('Канал не найден');
+                                Lampa.Noty.show('Канал не найден в плейлисте');
                             }
                         },
                         error: function() { Lampa.Noty.show('Ошибка загрузки плейлиста'); }

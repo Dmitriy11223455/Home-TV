@@ -1,7 +1,6 @@
 (function () {
     'use strict';
 
-    // 1. Стили интерфейса
     if (!$('#home-tv-styles').length) {
         $('<style id="home-tv-styles">' +
             '.home-tv-list { padding: 20px; height: 100%; position: relative; overflow: hidden; }' +
@@ -17,57 +16,27 @@
         var html = $('<div class="home-tv-list"></div>');
         var inner = $('<div></div>');
         
-        // ВАШИ ССЫЛКИ ИЗ ФАЙЛА
         var channels = [
-            { 
-                title: 'ПЕРВЫЙ КАНАЛ', 
-                url: 'https://githubusercontent.com', 
-                img: 'https://iptvx.one',
-                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'Referer': 'https://televizor24tochka.ru' }
-            },
-            { 
-                title: 'ТНТ', 
-                url: 'https://githubusercontent.com', 
-                img: 'https://iptvx.one' 
-            },
-            { 
-                title: 'СТС', 
-                url: 'https://githubusercontent.com', 
-                img: 'https://iptvx.one',
-                headers: { 'User-Agent': 'Mozilla/5.0', 'Referer': 'https://ctc.ru' }
-            },
-            { 
-                title: 'Луганск 24', 
-                url: 'https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/ru_televizor24.m3u', 
-                img: 'https://iptvx.one' 
-            },
-            { 
-                title: 'НТВ', 
-                url: 'https://githubusercontent.com', 
-                img: 'https://iptvx.one' 
-            },
-            { 
-                title: 'РЕН ТВ', 
-                url: 'https://githubusercontent.com', 
-                img: 'https://iptvx.one' 
-            },
-            { 
-                title: 'Россия 24', 
-                url: 'https://githubusercontent.com', 
-                img: 'https://iptvx.one' 
-            },
-            { 
-                title: 'РТР Планета', 
-                url: 'https://githubusercontent.com', 
-                img: '',
-                headers: { 'User-Agent': 'AppleCoreMedia/1.0.0.19G82', 'Referer': 'https://smotrim.ru' }
-            }
+            { title: 'ПЕРВЫЙ КАНАЛ', url: 'https://githubusercontent.com', img: 'https://iptvx.one' },
+            { title: 'ТНТ', url: 'https://githubusercontent.com', img: 'https://iptvx.one' },
+            { title: 'ТОП 100', url: 'https://githubusercontent.com', img: 'https://iptvx.one' },
+            { title: 'СТС Int.', url: 'https://githubusercontent.com', img: 'https://iptvx.one' },
+            { title: 'РЕН ТВ', url: 'https://githubusercontent.com', img: 'https://iptvx.one' },
+            { title: 'МАТЧ ТВ!', url: 'https://githubusercontent.com', img: 'https://iptvx.one' },
+            { title: 'НТВ', url: 'https://githubusercontent.com', img: 'https://iptvx.one' },
+            { title: 'Россия 24', url: 'https://githubusercontent.com', img: 'https://iptvx.one' },
+            { title: 'РТР Планета', url: 'https://githubusercontent.com', img: '', headers: { 'Referer': 'https://smotrim.ru' } },
+            { title: 'Россия-РТР', url: 'https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/ru_televizor24.m3u', img: '' },
+            { title: 'Ю HD', url: 'https://githubusercontent.com', img: 'https://iptvx.one' },
+            { title: 'Чё!', url: 'https://githubusercontent.com', img: 'https://iptvx.one' },
+            { title: 'Россия К', url: 'https://githubusercontent.com', img: 'https://iptvx.one' },
+            { title: 'СТС', url: 'https://githubusercontent.com', img: 'https://iptvx.one' },
+            { title: 'СТС Love', url: 'https://githubusercontent.com', img: 'https://iptvx.one' }
         ];
 
-        // Стандартные заголовки (если не указаны выше)
         var defaultHeaders = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-            'Referer': 'https://televizor24tochka.ru'
+            'Referer': 'https://mediavitrina.ru'
         };
 
         this.create = function () {
@@ -78,7 +47,6 @@
                     '</div>');
 
                 card.on('hover:focus', function (e) { scroll.update($(e.target)); });
-                
                 card.on('hover:enter click', function () {
                     Lampa.Noty.show('Поиск: ' + channel.title);
                     $.ajax({
@@ -87,36 +55,36 @@
                         dataType: 'text',
                         success: function(data) {
                             var lines = data.split('\n');
-                            var streamUrl = '';
+                            var rawUrl = '';
                             var searchName = channel.title.toLowerCase().replace(/\s/g, '');
                             
                             for (var i = 0; i < lines.length; i++) {
                                 var line = lines[i].trim();
                                 if (line.toUpperCase().indexOf('#EXTINF') > -1 && line.toLowerCase().replace(/\s/g, '').indexOf(searchName) > -1) {
-                                    // Проверяем 3 следующие строки на наличие ссылки
                                     for (var j = i + 1; j <= i + 3 && j < lines.length; j++) {
                                         if (lines[j].trim().startsWith('http')) {
-                                            streamUrl = lines[j].trim().split('|')[0]; // Чистый URL
+                                            rawUrl = lines[j].trim();
                                             break;
                                         }
                                     }
                                 }
-                                if (streamUrl) break;
+                                if (rawUrl) break;
                             }
 
-                            if (streamUrl) {
+                            if (rawUrl) {
+                                // Берем только саму ссылку, отсекая старые заголовки плейлиста
+                                var cleanUrl = rawUrl.split('|')[0].trim();
                                 var h = channel.headers || defaultHeaders;
-                                var formattedUrl = streamUrl + '|User-Agent=' + encodeURIComponent(h['User-Agent']) + '&Referer=' + encodeURIComponent(h['Referer']);
+                                
+                                // Склеиваем всё заново по стандарту Lampa
+                                var finalLink = cleanUrl + '|User-Agent=' + encodeURIComponent(h['User-Agent'] || defaultHeaders['User-Agent']) + '&Referer=' + encodeURIComponent(h['Referer'] || defaultHeaders['Referer']);
 
-                                Lampa.Player.play({
-                                    url: formattedUrl,
-                                    title: channel.title
-                                });
+                                Lampa.Player.play({ url: finalLink, title: channel.title });
                             } else {
-                                Lampa.Noty.show('Канал не найден в плейлисте');
+                                Lampa.Noty.show('Канал не найден');
                             }
                         },
-                        error: function() { Lampa.Noty.show('Ошибка загрузки плейлиста'); }
+                        error: function() { Lampa.Noty.show('Ошибка сети'); }
                     });
                 });
                 inner.append(card);
@@ -157,6 +125,7 @@
     if (window.appready) addPlugin();
     else Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') addPlugin(); });
 })();
+
 
 
 

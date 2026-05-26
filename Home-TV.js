@@ -12,93 +12,75 @@
             '</style>').appendTo('body');
     }
 
-    // 2. Компонент плагина
     Lampa.Component.add('home_tv_plugin', function (object, exam) {
         var scroll = new Lampa.Scroll({mask: true, over: true});
         var html = $('<div class="home-tv-list"></div>');
         var inner = $('<div></div>');
         
-        // Ваш финальный массив каналов (строго оригинал)
+        // ВАШИ ССЫЛКИ ИЗ ФАЙЛА
         var channels = [
             { 
                 title: 'ПЕРВЫЙ КАНАЛ', 
-                url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
-                img: 'https://iptvx.one/picons/pervy.png',
-                ref: 'https://televizor24tochka.ru',
-                ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
-            },
-            { 
-                title: 'Россия 1', 
-                url: 'https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/ru_televizor24.m3u', 
-                img: 'https://iptvx.one/picons/rossia1.png',
-                ref: 'https://televizor24tochka.ru',
-                ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
-            },
-            { 
-                title: 'Россия 24', 
-                url: 'https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/ru_televizor24.m3u', 
-                img: 'https://iptvx.one/picons/rossia-24.png',
-                ref: 'https://televizor24tochka.ru',
-                ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
-            },
-            { 
-                title: 'НТВ', 
-                url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
-                img: 'https://iptvx.one/picons/ntv.png',
-                ref: 'https://televizor24tochka.ru',
-                ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
-            },
-            { 
-                title: 'СТС', 
-                url: 'https://raw.githubusercontent.com/smolnp/IPTVru/refs/heads/gh-pages/IPTVru.m3u', 
-                img: 'https://iptvx.one/picons/sts.png',
-                ref: 'https://televizor24tochka.ru',
-                ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
-            },
-            { 
-                title: 'МАТЧ ТВ!', 
-                url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
-                img: 'https://iptvx.one/picons/match-tv.png',
-                ref: 'https://televizor24tochka.ru',
-                ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
+                url: 'https://githubusercontent.com', 
+                img: 'https://iptvx.one',
+                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'Referer': 'https://televizor24tochka.ru' }
             },
             { 
                 title: 'ТНТ', 
-                url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
-                img: 'https://iptvx.one/picons/tnt.png',
-                ref: 'https://televizor24tochka.ru',
-                ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
+                url: 'https://githubusercontent.com', 
+                img: 'https://iptvx.one' 
+            },
+            { 
+                title: 'СТС', 
+                url: 'https://githubusercontent.com', 
+                img: 'https://iptvx.one',
+                headers: { 'User-Agent': 'Mozilla/5.0', 'Referer': 'https://ctc.ru' }
+            },
+            { 
+                title: 'Луганск 24', 
+                url: 'https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/ru_televizor24.m3u', 
+                img: 'https://iptvx.one' 
+            },
+            { 
+                title: 'НТВ', 
+                url: 'https://githubusercontent.com', 
+                img: 'https://iptvx.one' 
             },
             { 
                 title: 'РЕН ТВ', 
-                url: 'https://raw.githubusercontent.com/Dmitriy11223455/my-tv-grabber/refs/heads/main/playlist.m3u', 
-                img: 'https://iptvx.one/picons/18.png',
-                ref: 'https://televizor24tochka.ru',
-                ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
+                url: 'https://githubusercontent.com', 
+                img: 'https://iptvx.one' 
             },
             { 
-                title: 'Россия К', 
-                url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u', 
-                img: 'https://iptvx.one/picons/kultura.png',
-                ref: 'https://televizor24tochka.ru',
-                ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'
+                title: 'Россия 24', 
+                url: 'https://githubusercontent.com', 
+                img: 'https://iptvx.one' 
+            },
+            { 
+                title: 'РТР Планета', 
+                url: 'https://githubusercontent.com', 
+                img: '',
+                headers: { 'User-Agent': 'AppleCoreMedia/1.0.0.19G82', 'Referer': 'https://smotrim.ru' }
             }
         ];
 
-        this.render = function () { return html; };
+        // Стандартные заголовки (если не указаны выше)
+        var defaultHeaders = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+            'Referer': 'https://televizor24tochka.ru'
+        };
 
         this.create = function () {
-            inner.empty();
             channels.forEach(function (channel) {
                 var card = $('<div class="home-tv-card selector">' +
                     '<div class="home-tv-card__icon" style="background-image: url(' + (channel.img || '') + ')"></div>' +
                     '<div class="home-tv-card__title">' + channel.title + '</div>' +
                     '</div>');
-                
-                card.on('hover:focus', function (e) { scroll.update($(e.target)); });
 
+                card.on('hover:focus', function (e) { scroll.update($(e.target)); });
+                
                 card.on('hover:enter click', function () {
-                    Lampa.Noty.show('Поиск потока: ' + channel.title);
+                    Lampa.Noty.show('Поиск: ' + channel.title);
                     $.ajax({
                         url: channel.url,
                         method: 'GET',
@@ -106,15 +88,15 @@
                         success: function(data) {
                             var lines = data.split('\n');
                             var streamUrl = '';
-                            var searchName = channel.title.toLowerCase();
+                            var searchName = channel.title.toLowerCase().replace(/\s/g, '');
                             
                             for (var i = 0; i < lines.length; i++) {
-                                let line = lines[i].trim();
-                                if (line.toLowerCase().indexOf('#extinf') > -1 && line.toLowerCase().indexOf(searchName) > -1) {
-                                    for (var j = i + 1; j < Math.min(i + 10, lines.length); j++) {
-                                        let nextLine = lines[j].trim();
-                                        if (nextLine.startsWith('http')) {
-                                            streamUrl = nextLine.split('|')[0].trim();
+                                var line = lines[i].trim();
+                                if (line.toUpperCase().indexOf('#EXTINF') > -1 && line.toLowerCase().replace(/\s/g, '').indexOf(searchName) > -1) {
+                                    // Проверяем 3 следующие строки на наличие ссылки
+                                    for (var j = i + 1; j <= i + 3 && j < lines.length; j++) {
+                                        if (lines[j].trim().startsWith('http')) {
+                                            streamUrl = lines[j].trim().split('|')[0]; // Чистый URL
                                             break;
                                         }
                                     }
@@ -123,15 +105,15 @@
                             }
 
                             if (streamUrl) {
-                                // Оригинальные заголовки, склеенные в понятный для Lampa формат ссылки
-                                var formattedUrl = streamUrl + '|User-Agent=' + encodeURIComponent(channel.ua) + '&Referer=' + encodeURIComponent(channel.ref);
+                                var h = channel.headers || defaultHeaders;
+                                var formattedUrl = streamUrl + '|User-Agent=' + encodeURIComponent(h['User-Agent']) + '&Referer=' + encodeURIComponent(h['Referer']);
 
-                                Lampa.Player.play({ 
+                                Lampa.Player.play({
                                     url: formattedUrl,
                                     title: channel.title
                                 });
                             } else {
-                                Lampa.Noty.show('Канал не найден');
+                                Lampa.Noty.show('Канал не найден в плейлисте');
                             }
                         },
                         error: function() { Lampa.Noty.show('Ошибка загрузки плейлиста'); }
@@ -141,14 +123,15 @@
             });
             scroll.append(inner);
             html.append(scroll.render(true));
-            return this.render();
+            return html;
         };
 
+        this.render = function () { return html; };
         this.active = function () {
             Lampa.Controller.add('home_tv_ctrl', {
-                toggle: function () { 
-                    Lampa.Controller.collectionSet(html); 
-                    Lampa.Controller.collectionFocus(html.find('.selector'), html); 
+                toggle: function () {
+                    Lampa.Controller.collectionSet(html);
+                    Lampa.Controller.collectionFocus(html.find('.selector').first(), html);
                 },
                 up: function () { Lampa.Controller.move('up'); },
                 down: function () { Lampa.Controller.move('down'); },
@@ -159,7 +142,6 @@
         this.create();
     });
 
-    // 3. Меню
     function addPlugin() {
         if ($('.menu__item[data-action="home_tv"]').length > 0) return;
         var menu_item = $('<li class="menu__item selector" data-action="home_tv">' +
@@ -175,6 +157,7 @@
     if (window.appready) addPlugin();
     else Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') addPlugin(); });
 })();
+
 
 
 

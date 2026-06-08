@@ -4,49 +4,49 @@
     var plugin = {
         component: 'home_tv',
         name: 'HOME TV',
-        version: '1.1.2'
+        version: '1.1.5'
     };
 
-    // 1. Исправленные и железные стили под структуру Lampa
+    // 1. Жесткие стили с абсолютным позиционированием колонок (чтобы ничего не съезжало)
     if (!$('#home-tv-styles').length) {
         $('<style id="home-tv-styles">' +
-            '.home-tv-container { display: flex; width: 100%; height: 100%; background: #141414; position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden; box-sizing: border-box; z-index: 10; font-family: Roboto, Arial, sans-serif; }' +
+            '.home-tv-container { width: 100% !important; height: 100% !important; background: #141414 !important; position: absolute !important; left: 0 !important; top: 0 !important; right: 0 !important; bottom: 0 !important; overflow: hidden !important; z-index: 9999 !important; box-sizing: border-box; font-family: Roboto, Arial, sans-serif; }' +
             
-            /* Левая колонка — Категории */
-            '.home-tv-sidebar { width: 18rem; padding: 2rem 1rem; display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.4); box-sizing: border-box; flex-shrink: 0; height: 100%; }' +
+            /* Левая колонка — Категории фиксировано слева */
+            '.home-tv-sidebar { position: absolute !important; left: 0 !important; top: 0 !important; bottom: 0 !important; width: 18rem !important; padding: 2rem 1rem !important; display: flex !important; flex-direction: column !important; border-right: 1px solid rgba(255,255,255,0.08) !important; background: rgba(0,0,0,0.4) !important; box-sizing: border-box !important; }' +
             '.home-tv-sidebar__title { font-size: 1.8rem; font-weight: bold; margin-bottom: 2rem; padding-left: 0.5rem; color: #fff; letter-spacing: 1px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }' +
-            '.home-tv-sidebar-list { display: flex; flex-direction: column; gap: 0.4rem; overflow-y: auto; flex: 1; }' +
-            '.home-tv-sidebar-item { display: flex; align-items: center; justify-content: space-between; padding: 0.9rem 1.2rem; border-radius: 0.6rem; cursor: pointer; color: #a0a0a0; font-size: 1.1rem; transition: background 0.2s, color 0.2s; box-sizing: border-box; }' +
-            '.home-tv-sidebar-item__left { display: flex; align-items: center; gap: 1rem; }' +
-            '.home-tv-sidebar-item__icon { display: flex; align-items: center; opacity: 0.6; color: #fff; }' +
+            '.home-tv-sidebar-list { display: flex !important; flex-direction: column !important; gap: 0.4rem !important; overflow-y: auto !important; flex: 1 !important; }' +
+            '.home-tv-sidebar-item { display: flex !important; align-items: center !important; justify-content: space-between !important; padding: 0.9rem 1.2rem !important; border-radius: 0.6rem !important; cursor: pointer; color: #a0a0a0; font-size: 1.1rem; box-sizing: border-box !important; }' +
+            '.home-tv-sidebar-item__left { display: flex !important; align-items: center !important; gap: 1rem !important; }' +
+            '.home-tv-sidebar-item__icon { display: flex !important; align-items: center !important; opacity: 0.6; color: #fff; }' +
             '.home-tv-sidebar-item__icon svg { width: 1.3rem; height: 1.3rem; }' +
-            '.home-tv-sidebar-item.focus { background: #fff; color: #000; font-weight: bold; }' +
-            '.home-tv-sidebar-item.focus .home-tv-sidebar-item__icon { opacity: 1; color: #000; }' +
+            '.home-tv-sidebar-item.focus { background: #fff !important; color: #000 !important; font-weight: bold !important; }' +
+            '.home-tv-sidebar-item.focus .home-tv-sidebar-item__icon { opacity: 1 !important; color: #000 !important; }' +
             '.home-tv-sidebar-item__count { font-size: 0.9rem; opacity: 0.5; font-family: monospace; }' +
             
-            /* Средняя колонка — Сетка/Список каналов */
-            '.home-tv-channels-wrap { width: 26rem; height: 100%; padding: 2rem 0.8rem; box-sizing: border-box; position: relative; border-right: 1px solid rgba(255,255,255,0.04); display: flex; flex-direction: column; flex-shrink: 0; background: rgba(0,0,0,0.1); }' +
-            '.home-tv-channels-wrap .scroll { height: 100%; width: 100%; }' +
-            '.home-tv-channel-row { display: flex; align-items: center; margin-bottom: 0.8rem; width: 100%; box-sizing: border-box; padding: 0 0.4rem; }' +
-            '.home-tv-card { flex: 1; height: 4.8rem; background: rgba(255,255,255,0.03); border: 2px solid transparent; border-radius: 0.8rem; display: flex; align-items: center; justify-content: flex-start; cursor: pointer; padding: 0.6rem 1.2rem; box-sizing: border-box; gap: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.2s, background-color 0.2s; }' +
-            '.home-tv-card.focus { border-color: #fff; background: rgba(255,255,255,0.15); transform: scale(1.02); }' +
-            '.home-tv-card__icon { width: 4.8rem; height: 2.8rem; background-size: contain; background-repeat: no-repeat; background-position: center; background-color: rgba(0,0,0,0.3); border-radius: 0.4rem; flex-shrink: 0; padding: 0.2rem; box-sizing: border-box; }' +
+            /* Средняя колонка — Каналы строго по центру */
+            '.home-tv-channels-wrap { position: absolute !important; left: 18rem !important; top: 0 !important; bottom: 0 !important; width: 26rem !important; padding: 2rem 0.8rem !important; box-sizing: border-box !important; border-right: 1px solid rgba(255,255,255,0.04) !important; background: rgba(0,0,0,0.1) !important; display: flex !important; flex-direction: column !important; }' +
+            '.home-tv-channels-wrap .scroll { height: 100% !important; width: 100% !important; }' +
+            '.home-tv-channel-row { display: flex !important; align-items: center !important; margin-bottom: 0.8rem !important; width: 100% !important; box-sizing: border-box !important; padding: 0 0.4rem !important; }' +
+            '.home-tv-card { flex: 1 !important; height: 4.8rem !important; background: rgba(255,255,255,0.03) !important; border: 2px solid transparent !important; border-radius: 0.8rem !important; display: flex !important; align-items: center !important; justify-content: flex-start !important; cursor: pointer; padding: 0.6rem 1.2rem !important; box-sizing: border-box !important; gap: 1.2rem !important; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.2s; }' +
+            '.home-tv-card.focus { border-color: #fff !important; background: rgba(255,255,255,0.15) !important; transform: scale(1.02); }' +
+            '.home-tv-card__icon { width: 4.8rem !important; height: 2.8rem !important; background-size: contain !important; background-repeat: no-repeat !important; background-position: center !important; background-color: rgba(0,0,0,0.3) !important; border-radius: 0.4rem !important; flex-shrink: 0 !important; padding: 0.2rem; box-sizing: border-box; }' +
             '.home-tv-card__title { font-size: 1.15rem; font-weight: 500; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }' +
             '.home-tv-card.focus .home-tv-card__title { font-weight: bold; }' +
             
-            /* Правая колонка — EPG и Описание инфо */
-            '.home-tv-info { flex: 1; height: 100%; padding: 3rem 2.5rem; display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; background: rgba(0,0,0,0.2); }' +
+            /* Правая колонка — Занимает всю оставшуюся область справа */
+            '.home-tv-info { position: absolute !important; left: 44rem !important; top: 0 !important; bottom: 0 !important; right: 0 !important; padding: 3rem 2.5rem !important; display: flex !important; flex-direction: column !important; box-sizing: border-box !important; overflow-y: auto !important; background: rgba(0,0,0,0.2) !important; }' +
             '.home-tv-info__group { font-size: 0.95rem; color: #ff9800; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }' +
             '.home-tv-info__title { font-size: 2.2rem; font-weight: bold; color: #fff; margin-bottom: 2rem; line-height: 1.2; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }' +
-            '.home-tv-info__epg { display: flex; flex-direction: column; gap: 0.9rem; }' +
-            '.home-tv-epg-item { display: flex; flex-direction: column; padding: 0.9rem 1.2rem; background: rgba(255,255,255,0.02); border-radius: 0.6rem; border-left: 4px solid rgba(255,255,255,0.15); position: relative; box-sizing: border-box; }' +
-            '.home-tv-epg-item.current { background: rgba(243, 156, 18, 0.07); border-left-color: #f39c12; }' +
-            '.home-tv-epg-time { font-size: 0.9rem; color: #aaa; font-family: monospace; margin-bottom: 0.4rem; display: flex; justify-content: space-between; width: 100%; }' +
-            '.home-tv-epg-item.current .home-tv-epg-time { color: #f39c12; font-weight: bold; }' +
+            '.home-tv-info__epg { display: flex !important; flex-direction: column !important; gap: 0.9rem !important; }' +
+            '.home-tv-epg-item { display: flex !important; flex-direction: column !important; padding: 0.9rem 1.2rem !important; background: rgba(255,255,255,0.02) !important; border-radius: 0.6rem !important; border-left: 4px solid rgba(255,255,255,0.15) !important; position: relative; box-sizing: border-box !important; }' +
+            '.home-tv-epg-item.current { background: rgba(243, 156, 18, 0.07) !important; border-left-color: #f39c12 !important; }' +
+            '.home-tv-epg-time { font-size: 0.9rem; color: #aaa; font-family: monospace; margin-bottom: 0.4rem; display: flex !important; justify-content: space-between !important; width: 100% !important; }' +
+            '.home-tv-epg-item.current .home-tv-epg-time { color: #f39c12 !important; font-weight: bold !important; }' +
             '.home-tv-epg-name { font-size: 1rem; color: #fff; line-height: 1.4; }' +
             '.home-tv-epg-timeline { height: 4px; background: rgba(255,255,255,0.1); width: 100%; margin-top: 0.6rem; border-radius: 2px; overflow: hidden; }' +
             '.home-tv-epg-progress { height: 100%; background: #f39c12; width: 50%; }' +
-            '.home-tv-loading { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; font-size: 1.3rem; color: #777; font-weight: 500; }' +
+            '.home-tv-loading { display: flex !important; width: 100% !important; height: 100% !important; align-items: center !important; justify-content: center !important; font-size: 1.3rem; color: #777; font-weight: 500; }' +
         '</style>').appendTo('body');
     }
 
@@ -58,7 +58,7 @@
         Lampa.Storage.set('home_tv_uid', UID);
     }
 
-    // 3. Основной компонент HOME TV
+    // 3. Компонент HOME TV
     Lampa.Component.add('home_tv', function (object, exam) {
         var scroll = new Lampa.Scroll({mask: true, over: true});
         var html = $('<div class="home-tv-container"></div>');
@@ -85,7 +85,6 @@
             return html; 
         };
 
-        // Загрузка списков с ограничением max_ch_in_group
         var loadPlaylists = function (callback) {
             var maxChannels = Lampa.Storage.get('home_tv_max_ch', '300');
             maxChannels = parseInt(maxChannels) || 300;
@@ -239,7 +238,6 @@
                 scroll_inner.append(row);
             });
             
-            // Если мы обновили список, нужно пересчитать высоту скролла Lampa
             scroll.step();
         };
 
@@ -278,7 +276,6 @@
             return this.render();
         };
 
-        // Логика управления с пульта
         this.active = function () {
             Lampa.Controller.add('home_tv_ctrl', {
                 toggle: function () { 
@@ -339,7 +336,7 @@
         $('.menu .menu__list').append(menu_item);
     }
 
-    // 5. Вкладка настроек
+    // 5. Настройки
     function addSettingsMenu() {
         Lampa.Settings.add({
             title: 'HOME TV',

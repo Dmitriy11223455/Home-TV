@@ -3,12 +3,11 @@
 var plugin = {
 	component: 'home_tv',
 	icon: "<svg height=\"244\" viewBox=\"0 0 260 244\" xmlns=\"http://www.w3.org/2000/svg\" style=\"fill-rule:evenodd;\" fill=\"currentColor\"><path d=\"M259.5 47.5v114c-1.709 14.556-9.375 24.723-23 30.5a2934.377 2934.377 0 0 1-107 1.5c-35.704.15-71.37-.35-107-1.5-13.625-5.777-21.291-15.944-23-30.5v-115c1.943-15.785 10.61-25.951 26-30.5a10815.71 10815.71 0 0 1 208 0c15.857 4.68 24.523 15.18 26 31.5zm-230-13a4963.403 4963.403 0 0 0 199 0c5.628 1.128 9.128 4.462 10.5 10 .667 40 .667 80 0 120-1.285 5.618-4.785 8.785-10.5 9.5-66 .667-132 .667-198 0-5.715-.715-9.215-3.882-10.5-9.5-.667-40-.667-80 0-120 1.35-5.18 4.517-8.514 9.5-10z\"/><path d=\"M70.5 71.5c17.07-.457 34.07.043 51 1.5 5.44 5.442 5.107 10.442-1 15-5.991.5-11.991.666-18 .5.167 14.337 0 28.671-.5 43-3.013 5.035-7.18 6.202-12.5 3.5a11.529 11.529 0 0 1-3.5-4.5 882.407 882.407 0 0 1-.5-42c-5.676.166-11.343 0-17-.5-4.569-2.541-6.069-6.375-4.5-11.5 1.805-2.326 3.972-3.992 6.5-5zM137.5 73.5c4.409-.882 7.909.452 10.5 4a321.009 321.009 0 0 0 16 30 322.123 322.123 0 0 0 16-30c2.602-3.712 6.102-4.879 10.5-3.5 5.148 3.334 6.314 7.834 3.5 13.5a1306.032 1306.032 0 0 0-22 43c-5.381 6.652-10.715 6.652-16 0a1424.647 1424.647 0 0 0-23-45c-1.691-5.369-.191-9.369 4.5-12zM57.5 207.5h144c7.788 2.242 10.288 7.242 7.5 15a11.532 11.532 0 0 1-4.5 3.5c-50 .667-100 .667-150 0-6.163-3.463-7.496-8.297-4-14.5 2.025-2.064 4.358-3.398 7-4z\"/></svg>",
-	name: 'Home tv',
-	url: ''
+	name: 'Home tv'
 };
 
 // ==========================================================================
-// НАСТРОЙКА: ВПИШИТЕ СЮДА ВАШИ ПЛЕЙЛИСТЫ (СЛОВАРЬ В МАССИВЕ)/ДЛЯ ПУЛЬТА,КАТЕГОРИЯ
+// НАСТРОЙКА: ВПИШИТЕ СЮДА ВАШИ ПЛЕЙЛИСТЫ (СЛОВАРЬ В МАССИВЕ)/ДЛЯ ПУЛЬТА
 // ==========================================================================
 var MY_PLAYLISTS_LIST = [
     { title: "Фильмы и Сериалы", url: "http://ссылка_на_плейлист_1.m3u" },
@@ -70,6 +69,7 @@ var epgTemplate = $(('<div id="PLUGIN_epg">\n' +
 	'</div>' +
 	'</div>').replace(/PLUGIN/g, plugin.component)
 );
+
 function epgListView(isView) {
 	var scroll = $('.' + plugin.component + '.category-full').parents('.scroll');
 	if (scroll.length) {
@@ -102,6 +102,7 @@ Lampa.PlayerPlaylist.listener.follow('select', function(e) {
 	if (e.item.plugin && e.item.plugin === plugin.component && Lampa.Player.runas)
 		Lampa.Player.runas(Lampa.Storage.field('player_iptv'));
 });
+
 function channelSwitch(dig, isChNum) {
 	if (!Lampa.Player.opened()) return false;
 	var playlist = Lampa.PlayerPlaylist.get();
@@ -426,13 +427,16 @@ function getEpgSessCache(epgId, t) {
 	}
 	return epg;
 }
+
 function setEpgSessCache(epgId, epg) {
 	var key = getEpgSessKey(epgId);
 	sessionStorage.setItem(key, JSON.stringify(epg));
 }
+
 function getEpgSessKey(epgId) {
 	return ['epg', epgId].join('\t');
 }
+
 function networkSilentSessCache(url, success, fail, param) {
 	var context = this;
 	var urlForKey = url.replace(/([&?])sig=[^&]+&?/, '$1');
@@ -997,7 +1001,7 @@ function addSettings(type, param) {
 		type: type,
 		name: name,
 		values: param.values || undefined,
-		default: param.default || undefined
+		default: param.default !== undefined ? param.default : undefined
 	});
 }
 
@@ -1043,7 +1047,7 @@ function configurePlaylist(triggerMode) {
 	} else {
 		Lampa.Menu.remove(plugin.component);
 	}
-	if (triggerMode === 3) {
+	if (triggerMode === 3 || triggerMode === 0) {
 		var userPlaylists = getStorage('user_playlists', '[]');
 		if (!userPlaylists.length) {
 			for (var i = 0; i < MY_PLAYLISTS_LIST.length; i++) {
@@ -1065,20 +1069,22 @@ function configurePlaylist(triggerMode) {
 				page: true
 			});
 		}
-		Lampa.Activity.push({
-			url: '',
-			title: langGet('user_playlists'),
-			component: 'playlists',
-			page: true,
-			playlists: lists
-		});
+		if (triggerMode === 3) {
+			Lampa.Activity.push({
+				url: '',
+				title: langGet('user_playlists'),
+				component: 'playlists',
+				page: true,
+				playlists: lists
+			});
+		}
 	}
 }
 
 function initSettings() {
     addSettings('trigger', { title: langGet('square_icons'), name: 'square_icons', default: false });
     addSettings('trigger', { title: langGet('contain_icons'), name: 'contain_icons', default: true });
-    addSettings('trigger', { title: langGet('launch_menu'), name: 'launch_menu', default: false });
+    addSettings('trigger', { title: langGet('launch_menu'), name: 'launch_menu', default: true });
     addSettings('select', {
         title: langGet('max_ch_in_group'),
         description: langGet('max_ch_in_group_desc'),
@@ -1086,6 +1092,11 @@ function initSettings() {
         values: { 0: '#{settings_param_card_view_all}', 60: '60', 120: '120', 180: '180', 240: '240', 300: '300' },
         default: 300
     });
+    
+    if (Lampa.Storage.get(plugin.component + '_launch_menu') === null) {
+        Lampa.Storage.set(plugin.component + '_launch_menu', 'true');
+    }
+    
     configurePlaylist(0);
     
     UID = getStorage('uid', '');
@@ -1112,9 +1123,7 @@ function pluginStart() {
         name: plugin.name,
         description: 'IPTV Player Lite Edition',
         component: plugin.component,
-        icon: plugin.icon,
-        url: '',
-        author: 'plugin_dev'
+        icon: plugin.icon
     };
     
     Lampa.Plugins.add(manifest);

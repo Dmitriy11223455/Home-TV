@@ -1074,6 +1074,64 @@ function configurePlaylist(triggerMode) {
 	}
 }
 
+function initSettings() {
+    addSettings('trigger', { title: langGet('square_icons'), name: 'square_icons', default: false });
+    addSettings('trigger', { title: langGet('contain_icons'), name: 'contain_icons', default: true });
+    addSettings('trigger', { title: langGet('launch_menu'), name: 'launch_menu', default: false });
+    addSettings('select', {
+        title: langGet('max_ch_in_group'),
+        description: langGet('max_ch_in_group_desc'),
+        name: 'max_ch_in_group',
+        values: { 0: '#{settings_param_card_view_all}', 60: '60', 120: '120', 180: '180', 240: '240', 300: '300' },
+        default: 300
+    });
+    configurePlaylist(0);
+    
+    UID = getStorage('uid', '');
+    if (!UID) {
+        UID = Lampa.Utils.uid(10).toUpperCase().replace(/(.{4})/g, '$1-');
+        setStorage('uid', UID);
+    } else if (UID.length > 12) {
+        UID = UID.substring(0, 12);
+        setStorage('uid', UID);
+    }
+    addSettings('title', {title: langGet('uid')});
+    addSettings('static', {title: UID, description: langGet('unique_id')});
+}
+
+function pluginStart() {
+    if (!!window['plugin_' + plugin.component + '_ready']) return;
+    window['plugin_' + plugin.component + '_ready'] = true;
+    
+    Lampa.Component.add(plugin.component, pluginPage);
+    
+    var manifest = {
+        type: 'iptv',
+        version: '1.0.4',
+        name: plugin.name,
+        description: 'IPTV Player Lite Edition',
+        component: plugin.component,
+        icon: plugin.icon
+    };
+    
+    Lampa.Plugins.add(manifest);
+    
+    initSettings(); 
+    
+    if (!getSettings('launch_menu')) {
+        Lampa.Listener.follow('app', function (e) {
+            if (e.type === 'ready') {
+                var tvButton = $('.menu .menu__item[data-id="tv"]');
+                if (tvButton.length) {
+                    tvButton.off('click').on('click', function () {
+                        configurePlaylist(3);
+                    });
+                }
+            }
+        });
+    }
+}
+
 Lampa.Storage.listener.follow('change', function(e) {
 	if (e.name === 'player_iptv' && Lampa.Player.opened()) {
 		var playlist = Lampa.PlayerPlaylist.get();
@@ -1085,97 +1143,11 @@ Lampa.Storage.listener.follow('change', function(e) {
 
 Lampa.Keypad.listener.follow('keydown', keydown);
 
-addSettings(
-	'trigger',
-	{
-		title: langGet('square_icons'),
-		name: 'square_icons',
-		default: false
-	}
-);
-addSettings(
-	'trigger',
-	{
-		title: langGet('contain_icons'),
-		name: 'contain_icons',
-		default: true
-	}
-);
-addSettings(
-	'trigger',
-	{
-		title: langGet('launch_menu'),
-		name: 'launch_menu',
-		default: false
-	}
-);
-addSettings(
-	'select',
-	{
-		title: langGet('max_ch_in_group'),
-		description: langGet('max_ch_in_group_desc'),
-		name: 'max_ch_in_group',
-		values: {
-			0: '#{settings_param_card_view_all}',
-			60: '60',
-			120: '120',
-			180: '180',
-			240: '240',
-			300: '300'
-		},
-		default: 300
-	}
-);
-configurePlaylist(0);
-UID = getStorage('uid', '');
-if (!UID) {
-	UID = Lampa.Utils.uid(10).toUpperCase().replace(/(.{4})/g, '$1-');
-	setStorage('uid', UID);
-} else if (UID.length > 12) {
-	UID = UID.substring(0, 12);
-	setStorage('uid', UID);
-}
-addSettings('title', {title: langGet('uid')});
-addSettings('static', {title: UID, description: langGet('unique_id')});
-
-function pluginStart() {
-	if (!!window['plugin_' + plugin.component + '_ready']) {
-		console.log(plugin.name, 'plugin already start');
-		return;
-	}
-	window['plugin_' + plugin.component + '_ready'] = true;
-	Lampa.Component.add(plugin.component, pluginPage);
-	
-	var manifest = {
-		type: 'iptv',
-		version: '1.0.4',
-		name: plugin.name,
-		description: 'IPTV Player Lite Edition',
-		component: plugin.component,
-		icon: plugin.icon
-	};
-	
-	Lampa.Plugins.add(manifest);
-	
-	if (!getSettings('launch_menu')) {
-		Lampa.Listener.follow('app', function (e) {
-			if (e.type === 'ready') {
-				var tvButton = $('.menu .menu__item[data-id="tv"]');
-				if (tvButton.length) {
-					tvButton.off('click').on('click', function () {
-						configurePlaylist(3);
-					});
-				}
-			}
-		});
-	}
-}
-
 if (window.lampa_started) {
-	pluginStart();
+    pluginStart();
 } else {
-	Lampa.Listener.follow('app', function (e) {
-		if (e.type === 'ready') pluginStart();
-	});
+    Lampa.Listener.follow('app', function (e) {
+        if (e.type === 'ready') pluginStart();
+    });
 }
 })();

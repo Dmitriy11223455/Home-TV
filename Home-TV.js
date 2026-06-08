@@ -4,53 +4,53 @@
     var plugin = {
         component: 'home_tv',
         name: 'HOME TV',
-        version: '1.1.0'
+        version: '1.1.2'
     };
 
-    // 1. Стили интерфейса один в один как на скриншоте
+    // 1. Исправленные и железные стили под структуру Lampa
     if (!$('#home-tv-styles').length) {
         $('<style id="home-tv-styles">' +
-            '.home-tv-container { display: flex; width: 100%; height: 100%; background: #141414; position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden; box-sizing: border-box; font-family: Roboto, Arial, sans-serif; }' +
+            '.home-tv-container { display: flex; width: 100%; height: 100%; background: #141414; position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden; box-sizing: border-box; z-index: 10; font-family: Roboto, Arial, sans-serif; }' +
             
-            /* Левая колонка: Категории (Узкая, лаконичная) */
-            '.home-tv-sidebar { width: 16rem; padding: 2rem 0.8rem; display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); box-sizing: border-box; }' +
-            '.home-tv-sidebar__title { font-size: 1.6rem; font-weight: bold; margin-bottom: 2rem; padding-left: 0.8rem; color: #fff; letter-spacing: 0.5px; text-transform: uppercase; }' +
-            '.home-tv-sidebar-list { display: flex; flex-direction: column; gap: 0.3rem; overflow-y: auto; flex: 1; }' +
-            '.home-tv-sidebar-item { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1rem; border-radius: 0.5rem; cursor: pointer; color: #a0a0a0; font-size: 1rem; transition: all 0.2s; }' +
-            '.home-tv-sidebar-item__left { display: flex; align-items: center; gap: 0.8rem; }' +
-            '.home-tv-sidebar-item__icon { display: flex; align-items: center; opacity: 0.5; color: #fff; }' +
-            '.home-tv-sidebar-item__icon svg { width: 1.2rem; height: 1.2rem; }' +
+            /* Левая колонка — Категории */
+            '.home-tv-sidebar { width: 18rem; padding: 2rem 1rem; display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.4); box-sizing: border-box; flex-shrink: 0; height: 100%; }' +
+            '.home-tv-sidebar__title { font-size: 1.8rem; font-weight: bold; margin-bottom: 2rem; padding-left: 0.5rem; color: #fff; letter-spacing: 1px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }' +
+            '.home-tv-sidebar-list { display: flex; flex-direction: column; gap: 0.4rem; overflow-y: auto; flex: 1; }' +
+            '.home-tv-sidebar-item { display: flex; align-items: center; justify-content: space-between; padding: 0.9rem 1.2rem; border-radius: 0.6rem; cursor: pointer; color: #a0a0a0; font-size: 1.1rem; transition: background 0.2s, color 0.2s; box-sizing: border-box; }' +
+            '.home-tv-sidebar-item__left { display: flex; align-items: center; gap: 1rem; }' +
+            '.home-tv-sidebar-item__icon { display: flex; align-items: center; opacity: 0.6; color: #fff; }' +
+            '.home-tv-sidebar-item__icon svg { width: 1.3rem; height: 1.3rem; }' +
             '.home-tv-sidebar-item.focus { background: #fff; color: #000; font-weight: bold; }' +
             '.home-tv-sidebar-item.focus .home-tv-sidebar-item__icon { opacity: 1; color: #000; }' +
-            '.home-tv-sidebar-item__count { font-size: 0.8rem; opacity: 0.6; font-family: monospace; }' +
+            '.home-tv-sidebar-item__count { font-size: 0.9rem; opacity: 0.5; font-family: monospace; }' +
             
-            /* Средняя колонка: Сетка каналов как на скриншоте */
-            '.home-tv-channels-wrap { width: 28rem; height: 100%; padding: 1.5rem 0.5rem; box-sizing: border-box; position: relative; border-right: 1px solid rgba(255,255,255,0.03); display: flex; flex-direction: column; }' +
-            '.home-tv-channels-wrap .scroll { height: 100%; }' +
-            '.home-tv-channel-row { display: flex; align-items: center; margin-bottom: 0.6rem; width: 100%; padding: 0 0.5rem; box-sizing: border-box; }' +
-            '.home-tv-card { flex: 1; height: 4.2rem; background: rgba(255,255,255,0.03); border: 2px solid transparent; border-radius: 0.6rem; display: flex; align-items: center; justify-content: flex-start; cursor: pointer; padding: 0.5rem 1rem; box-sizing: border-box; gap: 1rem; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }' +
+            /* Средняя колонка — Сетка/Список каналов */
+            '.home-tv-channels-wrap { width: 26rem; height: 100%; padding: 2rem 0.8rem; box-sizing: border-box; position: relative; border-right: 1px solid rgba(255,255,255,0.04); display: flex; flex-direction: column; flex-shrink: 0; background: rgba(0,0,0,0.1); }' +
+            '.home-tv-channels-wrap .scroll { height: 100%; width: 100%; }' +
+            '.home-tv-channel-row { display: flex; align-items: center; margin-bottom: 0.8rem; width: 100%; box-sizing: border-box; padding: 0 0.4rem; }' +
+            '.home-tv-card { flex: 1; height: 4.8rem; background: rgba(255,255,255,0.03); border: 2px solid transparent; border-radius: 0.8rem; display: flex; align-items: center; justify-content: flex-start; cursor: pointer; padding: 0.6rem 1.2rem; box-sizing: border-box; gap: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.2s, background-color 0.2s; }' +
             '.home-tv-card.focus { border-color: #fff; background: rgba(255,255,255,0.15); transform: scale(1.02); }' +
-            '.home-tv-card__icon { width: 4.5rem; height: 2.6rem; background-size: contain; background-repeat: no-repeat; background-position: center; background-color: rgba(0,0,0,0.2); border-radius: 0.3rem; flex-shrink: 0; padding: 0.2rem; box-sizing: border-box; }' +
-            '.home-tv-card__title { font-size: 1.1rem; font-weight: 500; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }' +
-            '.home-tv-card.focus .home-tv-card__title { color: #fff; font-weight: bold; }' +
+            '.home-tv-card__icon { width: 4.8rem; height: 2.8rem; background-size: contain; background-repeat: no-repeat; background-position: center; background-color: rgba(0,0,0,0.3); border-radius: 0.4rem; flex-shrink: 0; padding: 0.2rem; box-sizing: border-box; }' +
+            '.home-tv-card__title { font-size: 1.15rem; font-weight: 500; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }' +
+            '.home-tv-card.focus .home-tv-card__title { font-weight: bold; }' +
             
-            /* Правая колонка: Программа передач (EPG) с таймлайном */
-            '.home-tv-info { flex: 1; padding: 2.5rem 2rem; display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; background: rgba(0,0,0,0.05); }' +
-            '.home-tv-info__group { font-size: 0.9rem; color: #ff9800; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }' +
-            '.home-tv-info__title { font-size: 2rem; font-weight: bold; color: #fff; margin-bottom: 1.8rem; line-height: 1.2; text-shadow: 0 2px 4px rgba(0,0,0,0.4); }' +
-            '.home-tv-info__epg { display: flex; flex-direction: column; gap: 0.8rem; }' +
-            '.home-tv-epg-item { display: flex; flex-direction: column; padding: 0.8rem 1rem; background: rgba(255,255,255,0.02); border-radius: 0.5rem; border-left: 4px solid rgba(255,255,255,0.15); position: relative; }' +
-            '.home-tv-epg-item.current { background: rgba(243, 156, 18, 0.06); border-left-color: #f39c12; }' +
-            '.home-tv-epg-time { font-size: 0.85rem; color: #aaa; font-family: monospace; margin-bottom: 0.3rem; display: flex; justify-content: space-between; }' +
+            /* Правая колонка — EPG и Описание инфо */
+            '.home-tv-info { flex: 1; height: 100%; padding: 3rem 2.5rem; display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; background: rgba(0,0,0,0.2); }' +
+            '.home-tv-info__group { font-size: 0.95rem; color: #ff9800; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }' +
+            '.home-tv-info__title { font-size: 2.2rem; font-weight: bold; color: #fff; margin-bottom: 2rem; line-height: 1.2; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }' +
+            '.home-tv-info__epg { display: flex; flex-direction: column; gap: 0.9rem; }' +
+            '.home-tv-epg-item { display: flex; flex-direction: column; padding: 0.9rem 1.2rem; background: rgba(255,255,255,0.02); border-radius: 0.6rem; border-left: 4px solid rgba(255,255,255,0.15); position: relative; box-sizing: border-box; }' +
+            '.home-tv-epg-item.current { background: rgba(243, 156, 18, 0.07); border-left-color: #f39c12; }' +
+            '.home-tv-epg-time { font-size: 0.9rem; color: #aaa; font-family: monospace; margin-bottom: 0.4rem; display: flex; justify-content: space-between; width: 100%; }' +
             '.home-tv-epg-item.current .home-tv-epg-time { color: #f39c12; font-weight: bold; }' +
-            '.home-tv-epg-name { font-size: 0.95rem; color: #fff; line-height: 1.3; }' +
-            '.home-tv-epg-timeline { height: 3px; background: rgba(255,255,255,0.1); width: 100%; margin-top: 0.5rem; border-radius: 2px; overflow: hidden; }' +
-            '.home-tv-epg-progress { height: 100%; background: #f39c12; width: 45%; }' + /* Статический или расчетный прогресс */
-            '.home-tv-loading { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; font-size: 1.2rem; color: #666; }' +
+            '.home-tv-epg-name { font-size: 1rem; color: #fff; line-height: 1.4; }' +
+            '.home-tv-epg-timeline { height: 4px; background: rgba(255,255,255,0.1); width: 100%; margin-top: 0.6rem; border-radius: 2px; overflow: hidden; }' +
+            '.home-tv-epg-progress { height: 100%; background: #f39c12; width: 50%; }' +
+            '.home-tv-loading { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; font-size: 1.3rem; color: #777; font-weight: 500; }' +
         '</style>').appendTo('body');
     }
 
-    // 2. Инициализация и генерация уникального UID (из download.js)
+    // 2. Генерация UID устройства
     var UID = Lampa.Storage.get('home_tv_uid', '');
     if (!UID) {
         UID = Lampa.Utils.uid(10).toUpperCase().replace(/(.{4})/g, '$1-');
@@ -58,7 +58,7 @@
         Lampa.Storage.set('home_tv_uid', UID);
     }
 
-    // 3. Компонент HOME TV
+    // 3. Основной компонент HOME TV
     Lampa.Component.add('home_tv', function (object, exam) {
         var scroll = new Lampa.Scroll({mask: true, over: true});
         var html = $('<div class="home-tv-container"></div>');
@@ -68,7 +68,7 @@
         var groups = [];
         var active_group_index = 0;
         var last_focused_card = null;
-        var current_column = 'sidebar'; // 'sidebar' или 'channels'
+        var current_column = 'sidebar';
 
         var sidebar = $('<div class="home-tv-sidebar"><div class="home-tv-sidebar__title">HOME TV</div><div class="home-tv-sidebar-list"></div></div>');
         var channelsWrap = $('<div class="home-tv-channels-wrap"></div>');
@@ -85,7 +85,7 @@
             return html; 
         };
 
-        // Загрузка списков с ограничением количества каналов (max_ch_in_group)
+        // Загрузка списков с ограничением max_ch_in_group
         var loadPlaylists = function (callback) {
             var maxChannels = Lampa.Storage.get('home_tv_max_ch', '300');
             maxChannels = parseInt(maxChannels) || 300;
@@ -178,7 +178,6 @@
             callback();
         };
 
-        // Генерация таймлайна программы передач (EPG)
         var updateEPG = function (channel) {
             var epgContainer = infoPanel.find('.home-tv-info__epg');
             epgContainer.empty();
@@ -187,9 +186,9 @@
             var hours = now.getHours();
 
             var mockEPG = [
-                { time: (hours) + ':00', name: 'Сейчас в эфире: Главные события дня и аналитика', current: true },
-                { time: (hours + 1) + ':15', name: 'Марафон популярных развлекательных передач', current: false },
-                { time: (hours + 3) + :30', name: 'Художественный фильм вечернего эфира', current: false }
+                { time: (hours) + ':00', name: 'Сейчас в эфире: Главные события дня, подробные репортажи и аналитика', current: true },
+                { time: (hours + 1) + ':15', name: 'Дневной интерактивный эфир и обсуждение актуальных тем', current: false },
+                { time: (hours + 3) + ':00', name: 'Художественный фильм / Киносериал', current: false }
             ];
 
             mockEPG.forEach(function (item) {
@@ -207,7 +206,7 @@
             scroll_inner.empty();
 
             group.channels.forEach(function (channel, index) {
-                var logoStyle = channel.img ? 'background-image: url(' + channel.img + ')' : 'background-color: rgba(255,255,255,0.05)';
+                var logoStyle = channel.img ? 'background-image: url(' + channel.img + ')' : 'background-color: rgba(255,255,255,0.06)';
                 
                 var row = $('<div class="home-tv-channel-row">' +
                     '<div class="home-tv-card selector" data-index="' + index + '">' +
@@ -239,6 +238,9 @@
 
                 scroll_inner.append(row);
             });
+            
+            // Если мы обновили список, нужно пересчитать высоту скролла Lampa
+            scroll.step();
         };
 
         this.create = function () {
@@ -249,7 +251,7 @@
                 sidebarList.empty();
 
                 if (groups.length === 0) {
-                    sidebarList.html('<div class="home-tv-loading">Пусто</div>');
+                    sidebarList.html('<div class="home-tv-loading">Списки пусты</div>');
                     return;
                 }
 
@@ -276,7 +278,7 @@
             return this.render();
         };
 
-        // Полная адаптация D-Pad под TV пульты
+        // Логика управления с пульта
         this.active = function () {
             Lampa.Controller.add('home_tv_ctrl', {
                 toggle: function () { 
@@ -317,7 +319,7 @@
         this.create();
     });
 
-    // 4. Добавление пункта HOME TV в меню
+    // 4. Меню Лампы
     function addPluginMenuItem() {
         if ($('.menu__item[data-action="home_tv"]').length > 0) return;
         
@@ -337,7 +339,7 @@
         $('.menu .menu__list').append(menu_item);
     }
 
-    // 5. Создание вкладки настроек внутри Lampa (в точности как в kuliklite)
+    // 5. Вкладка настроек
     function addSettingsMenu() {
         Lampa.Settings.add({
             title: 'HOME TV',

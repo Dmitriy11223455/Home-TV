@@ -2,12 +2,12 @@
     'use strict';
 
     var plugin = {
-        component: 'home_tv_plugin',
+        component: 'home_tv',
         name: 'HOME TV',
         version: '1.0.4'
     };
 
-    // 1. Внедрение адаптивных стилей под TV-интерфейсы (1080p / 720p)
+    // 1. Внедрение адаптивных стилей под TV-интерфейсы
     if (!$('#home-tv-styles').length) {
         $('<style id="home-tv-styles">' +
             '.home-tv-container { display: flex; width: 100%; height: 100%; background: #141414; position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden; box-sizing: border-box; font-family: Roboto, Arial, sans-serif; }' +
@@ -34,7 +34,7 @@
             '.home-tv-card__icon { width: 4rem; height: 100%; background-size: contain; background-repeat: no-repeat; background-position: center; flex-shrink: 0; }' +
             '.home-tv-card__title { font-size: 1.1rem; font-weight: 500; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }' +
             
-            /* Правая колонка: Инфо и Настоящее Расписание (EPG) */
+            /* Правая колонка: Инфо и Расписание (EPG) */
             '.home-tv-info { flex: 1; padding: 3.5rem 2.5rem; display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; }' +
             '.home-tv-info__group { font-size: 0.95rem; color: #ff9800; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }' +
             '.home-tv-info__title { font-size: 2.2rem; font-weight: bold; color: #fff; margin-bottom: 2rem; line-height: 1.2; }' +
@@ -48,8 +48,8 @@
         '</style>').appendTo('body');
     }
 
-    // 2. Определение главного компонента плагина
-    Lampa.Component.add('home_tv_plugin', function (object, exam) {
+    // 2. Регистрация компонента HOME TV
+    Lampa.Component.add('home_tv', function (object, exam) {
         var scroll = new Lampa.Scroll({mask: true, over: true});
         var html = $('<div class="home-tv-container"></div>');
         var scroll_inner = $('<div></div>');
@@ -58,10 +58,10 @@
         var groups = [];
         var active_group_index = 0;
         var last_focused_card = null;
-        var current_column = 'sidebar'; // 'sidebar' или 'channels'
+        var current_column = 'sidebar';
 
-        // Ссылки на DOM-элементы колонок
-        var sidebar = $('<div class="home-tv-sidebar"><div class="home-tv-sidebar__title">Кулик TV</div><div class="home-tv-sidebar-list"></div></div>');
+        // Элементы колонок (заголовок изменен на HOME TV)
+        var sidebar = $('<div class="home-tv-sidebar"><div class="home-tv-sidebar__title">HOME TV</div><div class="home-tv-sidebar-list"></div></div>');
         var channelsWrap = $('<div class="home-tv-channels-wrap"></div>');
         var infoPanel = $('<div class="home-tv-info">' +
             '<div class="home-tv-info__group">-</div>' +
@@ -76,7 +76,7 @@
             return html; 
         };
 
-        // Загрузка и парсинг M3U плейлистов в структурированный JSON
+        // Загрузка плейлистов
         var loadPlaylists = function (callback) {
             var playlistUrls = [
                 { title: 'Основные', url: 'https://raw.githubusercontent.com/Dmitriy11223455/iptv-autoupdate/refs/heads/main/playlist.m3u' },
@@ -106,7 +106,6 @@
             });
         };
 
-        // Внутренний парсер M3U
         var parseM3U = function (text, defaultCategory, tempGroups) {
             var lines = text.split('\n');
             var currentChannel = null;
@@ -116,15 +115,12 @@
                 if (line.startsWith('#EXTINF:')) {
                     currentChannel = {};
                     
-                    // Извлечение логотипы
                     var tvgLogoMatch = line.match(/tvg-logo="([^"]+)"/i);
                     currentChannel.img = tvgLogoMatch ? tvgLogoMatch[1] : '';
 
-                    // Извлечение категории (group-title)
                     var groupMatch = line.match(/group-title="([^"]+)"/i);
                     var category = groupMatch ? groupMatch[1] : defaultCategory;
 
-                    // Извлечение названия канала
                     var commaIndex = line.lastIndexOf(',');
                     currentChannel.title = commaIndex > -1 ? line.substring(commaIndex + 1).trim() : 'Без названия';
                     currentChannel.category = category;
@@ -134,7 +130,6 @@
                     if (!tempGroups[currentChannel.category]) {
                         tempGroups[currentChannel.category] = [];
                     }
-                    // Защита от дублей по названию
                     if (!tempGroups[currentChannel.category].some(function(c){ return c.title === currentChannel.title; })) {
                         tempGroups[currentChannel.category].push(currentChannel);
                     }
@@ -147,7 +142,6 @@
             var allChannels = [];
             groups = [];
 
-            // Сборка всех категорий
             Object.keys(tempGroups).forEach(function (catName) {
                 var channels = tempGroups[catName];
                 allChannels = allChannels.concat(channels);
@@ -158,7 +152,6 @@
                 });
             });
 
-            // Добавление общей категории в самое начало
             if (allChannels.length > 0) {
                 groups.unshift({
                     title: 'Все каналы',
@@ -170,12 +163,11 @@
             callback();
         };
 
-        // Загрузка реального EPG (Расписания) для выбранного канала
+        // Обновление EPG телепрограммы
         var updateEPG = function (channel) {
             var epgContainer = infoPanel.find('.home-tv-info__epg');
             epgContainer.empty();
 
-            // Симуляция динамического/реального EPG, если у канала нет внешнего XMLTV API
             var now = new Date();
             var hours = now.getHours();
 
@@ -196,7 +188,7 @@
             });
         };
 
-        // Рендеринг списка каналов центральной колонки
+        // Показ каналов
         var showChannels = function (group) {
             scroll_inner.empty();
 
@@ -239,9 +231,7 @@
             });
         };
 
-        // Инициализация структуры интерфейса
         this.create = function () {
-            var _this = this;
             sidebar.find('.home-tv-sidebar-list').html('<div class="home-tv-loading">Загрузка каналов...</div>');
 
             loadPlaylists(function () {
@@ -270,17 +260,14 @@
                     sidebarList.append(sItem);
                 });
 
-                // По умолчанию открываем стартовую группу
                 showChannels(groups[0]);
             });
 
             return this.render();
         };
 
-        // Строгое пространственное управление (Умный D-Pad фокус для TV)
+        // Навигация (D-Pad)
         this.active = function () {
-            var _this = this;
-            
             Lampa.Controller.add('home_tv_ctrl', {
                 toggle: function () { 
                     Lampa.Controller.collectionSet(html); 
@@ -290,12 +277,8 @@
                         Lampa.Controller.collectionFocus(last_focused_card[0], html);
                     }
                 },
-                up: function () { 
-                    Lampa.Controller.move('up'); 
-                },
-                down: function () { 
-                    Lampa.Controller.move('down'); 
-                },
+                up: function () { Lampa.Controller.move('up'); },
+                down: function () { Lampa.Controller.move('down'); },
                 left: function () { 
                     if (current_column === 'channels') {
                         current_column = 'sidebar';
@@ -315,9 +298,7 @@
                         Lampa.Controller.move('right');
                     }
                 },
-                back: function () { 
-                    Lampa.Activity.backward(); 
-                }
+                back: function () { Lampa.Activity.backward(); }
             });
             
             Lampa.Controller.toggle('home_tv_ctrl');
@@ -326,7 +307,7 @@
         this.create();
     });
 
-    // 3. Интеграция плагина в левое главное меню Lampa
+    // 3. Интеграция в левое меню Lampa под именем HOME TV
     function addPluginMenuItem() {
         if ($('.menu__item[data-action="home_tv"]').length > 0) return;
         
@@ -342,7 +323,7 @@
         menu_item.on('hover:enter click', function () {
             Lampa.Activity.push({ 
                 title: 'HOME TV', 
-                component: 'home_tv_plugin', 
+                component: 'home_tv', 
                 page: 1 
             });
         });
@@ -350,7 +331,6 @@
         $('.menu .menu__list').append(menu_item);
     }
 
-    // Ожидание готовности ядра приложения
     Lampa.Listener.follow('app', function (e) { 
         if (e.type == 'ready') {
             addPluginMenuItem(); 

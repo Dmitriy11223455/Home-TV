@@ -4,19 +4,20 @@
     var plugin = {
         component: 'home_tv',
         name: 'HOME TV',
-        version: '1.1.5'
+        version: '1.2.0'
     };
 
-    // 1. Жесткие стили с абсолютным позиционированием колонок (чтобы ничего не съезжало)
+    // 1. Идеальные стили на базе Flexbox для железной навигации пульта
     if (!$('#home-tv-styles').length) {
         $('<style id="home-tv-styles">' +
-            '.home-tv-container { width: 100% !important; height: 100% !important; background: #141414 !important; position: absolute !important; left: 0 !important; top: 0 !important; right: 0 !important; bottom: 0 !important; overflow: hidden !important; z-index: 9999 !important; box-sizing: border-box; font-family: Roboto, Arial, sans-serif; }' +
+            '.home-tv-wrapper { width: 100%; height: 100%; position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 999; background: #141414; }' +
+            '.home-tv-container { display: flex !important; width: 100% !important; height: 100% !important; overflow: hidden !important; box-sizing: border-box; }' +
             
-            /* Левая колонка — Категории фиксировано слева */
-            '.home-tv-sidebar { position: absolute !important; left: 0 !important; top: 0 !important; bottom: 0 !important; width: 18rem !important; padding: 2rem 1rem !important; display: flex !important; flex-direction: column !important; border-right: 1px solid rgba(255,255,255,0.08) !important; background: rgba(0,0,0,0.4) !important; box-sizing: border-box !important; }' +
-            '.home-tv-sidebar__title { font-size: 1.8rem; font-weight: bold; margin-bottom: 2rem; padding-left: 0.5rem; color: #fff; letter-spacing: 1px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }' +
+            /* Левая колонка — Категории */
+            '.home-tv-sidebar { width: 18rem !important; padding: 2rem 1rem !important; display: flex !important; flex-direction: column !important; border-right: 1px solid rgba(255,255,255,0.08) !important; background: rgba(0,0,0,0.4) !important; box-sizing: border-box !important; flex-shrink: 0 !important; height: 100% !important; }' +
+            '.home-tv-sidebar__title { font-size: 1.8rem; font-weight: bold; margin-bottom: 2rem; padding-left: 0.5rem; color: #fff; letter-spacing: 1px; }' +
             '.home-tv-sidebar-list { display: flex !important; flex-direction: column !important; gap: 0.4rem !important; overflow-y: auto !important; flex: 1 !important; }' +
-            '.home-tv-sidebar-item { display: flex !important; align-items: center !important; justify-content: space-between !important; padding: 0.9rem 1.2rem !important; border-radius: 0.6rem !important; cursor: pointer; color: #a0a0a0; font-size: 1.1rem; box-sizing: border-box !important; }' +
+            '.home-tv-sidebar-item { display: flex !important; align-items: center !important; justify-content: space-between !important; padding: 0.9rem 1.2rem !important; border-radius: 0.6rem !important; cursor: pointer; color: #a0a0a0; font-size: 1.1rem; box-sizing: border-box !important; flex-shrink: 0 !important; }' +
             '.home-tv-sidebar-item__left { display: flex !important; align-items: center !important; gap: 1rem !important; }' +
             '.home-tv-sidebar-item__icon { display: flex !important; align-items: center !important; opacity: 0.6; color: #fff; }' +
             '.home-tv-sidebar-item__icon svg { width: 1.3rem; height: 1.3rem; }' +
@@ -24,18 +25,18 @@
             '.home-tv-sidebar-item.focus .home-tv-sidebar-item__icon { opacity: 1 !important; color: #000 !important; }' +
             '.home-tv-sidebar-item__count { font-size: 0.9rem; opacity: 0.5; font-family: monospace; }' +
             
-            /* Средняя колонка — Каналы строго по центру */
-            '.home-tv-channels-wrap { position: absolute !important; left: 18rem !important; top: 0 !important; bottom: 0 !important; width: 26rem !important; padding: 2rem 0.8rem !important; box-sizing: border-box !important; border-right: 1px solid rgba(255,255,255,0.04) !important; background: rgba(0,0,0,0.1) !important; display: flex !important; flex-direction: column !important; }' +
+            /* Средняя колонка — Каналы */
+            '.home-tv-channels-wrap { width: 26rem !important; height: 100% !important; padding: 2rem 0.8rem !important; box-sizing: border-box !important; border-right: 1px solid rgba(255,255,255,0.04) !important; background: rgba(0,0,0,0.1) !important; display: flex !important; flex-direction: column !important; flex-shrink: 0 !important; }' +
             '.home-tv-channels-wrap .scroll { height: 100% !important; width: 100% !important; }' +
-            '.home-tv-channel-row { display: flex !important; align-items: center !important; margin-bottom: 0.8rem !important; width: 100% !important; box-sizing: border-box !important; padding: 0 0.4rem !important; }' +
-            '.home-tv-card { flex: 1 !important; height: 4.8rem !important; background: rgba(255,255,255,0.03) !important; border: 2px solid transparent !important; border-radius: 0.8rem !important; display: flex !important; align-items: center !important; justify-content: flex-start !important; cursor: pointer; padding: 0.6rem 1.2rem !important; box-sizing: border-box !important; gap: 1.2rem !important; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.2s; }' +
-            '.home-tv-card.focus { border-color: #fff !important; background: rgba(255,255,255,0.15) !important; transform: scale(1.02); }' +
+            '.home-tv-channel-row { display: flex !important; align-items: center !important; margin-bottom: 0.8rem !important; width: 100% !important; box-sizing: border-box !important; padding: 0 0.4rem !important; flex-shrink: 0 !important; }' +
+            '.home-tv-card { flex: 1 !important; height: 4.8rem !important; background: rgba(255,255,255,0.03) !important; border: 2px solid transparent !important; border-radius: 0.8rem !important; display: flex !important; align-items: center !important; justify-content: flex-start !important; cursor: pointer; padding: 0.6rem 1.2rem !important; box-sizing: border-box !important; gap: 1.2rem !important; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }' +
+            '.home-tv-card.focus { border-color: #fff !important; background: rgba(255,255,255,0.15) !important; }' +
             '.home-tv-card__icon { width: 4.8rem !important; height: 2.8rem !important; background-size: contain !important; background-repeat: no-repeat !important; background-position: center !important; background-color: rgba(0,0,0,0.3) !important; border-radius: 0.4rem !important; flex-shrink: 0 !important; padding: 0.2rem; box-sizing: border-box; }' +
             '.home-tv-card__title { font-size: 1.15rem; font-weight: 500; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }' +
             '.home-tv-card.focus .home-tv-card__title { font-weight: bold; }' +
             
-            /* Правая колонка — Занимает всю оставшуюся область справа */
-            '.home-tv-info { position: absolute !important; left: 44rem !important; top: 0 !important; bottom: 0 !important; right: 0 !important; padding: 3rem 2.5rem !important; display: flex !important; flex-direction: column !important; box-sizing: border-box !important; overflow-y: auto !important; background: rgba(0,0,0,0.2) !important; }' +
+            /* Правая колонка — EPG */
+            '.home-tv-info { flex: 1 !important; height: 100% !important; padding: 3rem 2.5rem !important; display: flex !important; flex-direction: column !important; box-sizing: border-box !important; overflow-y: auto !important; background: rgba(0,0,0,0.2) !important; }' +
             '.home-tv-info__group { font-size: 0.95rem; color: #ff9800; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }' +
             '.home-tv-info__title { font-size: 2.2rem; font-weight: bold; color: #fff; margin-bottom: 2rem; line-height: 1.2; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }' +
             '.home-tv-info__epg { display: flex !important; flex-direction: column !important; gap: 0.9rem !important; }' +
@@ -50,7 +51,7 @@
         '</style>').appendTo('body');
     }
 
-    // 2. Генерация UID устройства
+    // 2. Инициализация UID
     var UID = Lampa.Storage.get('home_tv_uid', '');
     if (!UID) {
         UID = Lampa.Utils.uid(10).toUpperCase().replace(/(.{4})/g, '$1-');
@@ -61,14 +62,19 @@
     // 3. Компонент HOME TV
     Lampa.Component.add('home_tv', function (object, exam) {
         var scroll = new Lampa.Scroll({mask: true, over: true});
+        
+        // Обертка-фиксатор для изоляции от слоев Lampa
+        var wrapper = $('<div class="home-tv-wrapper layer"></div>');
         var html = $('<div class="home-tv-container"></div>');
         var scroll_inner = $('<div></div>');
+        
         scroll.append(scroll_inner);
+        wrapper.append(html);
 
         var groups = [];
         var active_group_index = 0;
         var last_focused_card = null;
-        var current_column = 'sidebar';
+        var current_column = 'sidebar'; // 'sidebar' или 'channels'
 
         var sidebar = $('<div class="home-tv-sidebar"><div class="home-tv-sidebar__title">HOME TV</div><div class="home-tv-sidebar-list"></div></div>');
         var channelsWrap = $('<div class="home-tv-channels-wrap"></div>');
@@ -82,7 +88,7 @@
         channelsWrap.append(scroll.render(true));
 
         this.render = function () { 
-            return html; 
+            return wrapper; 
         };
 
         var loadPlaylists = function (callback) {
@@ -276,22 +282,34 @@
             return this.render();
         };
 
+        // НАВИГАЦИЯ ПУЛЬТА С ПРИНУДИТЕЛЬНОЙ ФИКСАЦИЕЙ НА ЭЛЕМЕНТАХ
         this.active = function () {
             Lampa.Controller.add('home_tv_ctrl', {
                 toggle: function () { 
-                    Lampa.Controller.collectionSet(html); 
+                    Lampa.Controller.collectionSet(wrapper); 
                     if (current_column === 'sidebar') {
-                        Lampa.Controller.collectionFocus(sidebar.find('.home-tv-sidebar-item')[active_group_index], html);
-                    } else if (last_focused_card) {
-                        Lampa.Controller.collectionFocus(last_focused_card[0], html);
+                        var active_item = sidebar.find('.home-tv-sidebar-item')[active_group_index];
+                        if (active_item) Lampa.Controller.collectionFocus(active_item, wrapper);
+                    } else if (last_focused_card && last_focused_card.length) {
+                        Lampa.Controller.collectionFocus(last_focused_card[0], wrapper);
+                    } else {
+                        var first_card = scroll_inner.find('.home-tv-card')[0];
+                        if (first_card) Lampa.Controller.collectionFocus(first_card, wrapper);
                     }
                 },
-                up: function () { Lampa.Controller.move('up'); },
-                down: function () { Lampa.Controller.move('down'); },
+                up: function () { 
+                    Lampa.Controller.move('up'); 
+                },
+                down: function () { 
+                    Lampa.Controller.move('down'); 
+                },
                 left: function () { 
                     if (current_column === 'channels') {
                         current_column = 'sidebar';
-                        Lampa.Controller.collectionFocus(sidebar.find('.home-tv-sidebar-item')[active_group_index], html);
+                        var target_sidebar = sidebar.find('.home-tv-sidebar-item')[active_group_index];
+                        if (target_sidebar) {
+                            Lampa.Controller.collectionFocus(target_sidebar, wrapper);
+                        }
                     } else {
                         Lampa.Controller.move('left');
                     }
@@ -299,15 +317,20 @@
                 right: function () { 
                     if (current_column === 'sidebar') {
                         var targetCard = scroll_inner.find('.home-tv-card')[0];
+                        if (last_focused_card && last_focused_card.length) {
+                            targetCard = last_focused_card[0];
+                        }
                         if (targetCard) {
                             current_column = 'channels';
-                            Lampa.Controller.collectionFocus(targetCard, html);
+                            Lampa.Controller.collectionFocus(targetCard, wrapper);
                         }
                     } else {
                         Lampa.Controller.move('right');
                     }
                 },
-                back: function () { Lampa.Activity.backward(); }
+                back: function () { 
+                    Lampa.Activity.backward(); 
+                }
             });
             
             Lampa.Controller.toggle('home_tv_ctrl');

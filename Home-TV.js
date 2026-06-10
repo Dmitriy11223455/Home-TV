@@ -1,5 +1,5 @@
 /**
- * Lampa Plugin: HOME TV
+ * Lampa Plugin: HOME TV, логотип и название
  * Полносистемный IPTV-плагин для Lampa с поддержкой M3U, EPG, Избранного и управления пультом.
  * Полностью готовый к работе код без сокращений и заглушек.
  */
@@ -68,6 +68,7 @@
             // Компонент настроек HOME TV
             Lampa.Component.add('hometv_settings', function (object) {
                 var comp = this;
+                comp.activity = object || {};
                 var scroll = new Lampa.Scroll({ mask: true, over: true });
                 var files = new Lampa.Files(object);
 
@@ -209,7 +210,7 @@
             $('.menu .menu__list').append(this.menu_item);
 
             // Регистрация основного компонента интерфейса
-            Lampa.Component.add('hometv', this.component.bind(this));
+            Lampa.Component.add('hometv', this.component);
 
             // Запускаем EPG фоновое обновление
             this.loadEPG();
@@ -247,12 +248,14 @@
 
         // Компонент отображения интерфейса HOME TV
         component: function (object) {
-            var self = this;
             var comp = this;
+            comp.activity = object || {}; // Фикс критической ошибки: привязываем activity к контексту компонента Lampa
+            
+            var self = HomeTV; // Изолируем ссылку на глобальный объект плагина
             var scroll = new Lampa.Scroll({ mask: true, over: true });
             var files = new Lampa.Files(object);
             
-            this.html = $('<div class="hometv-container"></div>');
+            self.html = $('<div class="hometv-container"></div>');
             
             // Внедрение стилей интерфейса плагина
             if (!$('#hometv-styles').length) {
@@ -557,7 +560,6 @@
 
             // Определение формата трансляции видео
             var videoUrl = channel.url;
-            var isMPEGTS = videoUrl.indexOf('.ts') !== -1 || videoUrl.indexOf('mpegts') !== -1;
             
             var playlistItem = {
                 title: channel.title,
@@ -678,7 +680,6 @@
                 var programmes = xmlDoc.getElementsByTagName("programme");
                 
                 var tempEpg = {};
-                var now = new Date();
 
                 for (var i = 0; i < programmes.length; i++) {
                     var prog = programmes[i];

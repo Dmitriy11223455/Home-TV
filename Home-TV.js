@@ -1,10 +1,12 @@
 (function () {
     'use strict';
 
-    // 1. Стили
+    if (window.__home_tv_loaded) return;
+    window.__home_tv_loaded = true;
+
     if (!$('#home-tv-styles').length) {
         $('<style id="home-tv-styles">' +
-            '.home-tv-list { padding: 20px; height: 100%; position: relative; overflow: hidden; }' +
+            '.home-tv-list { padding: 20px; overflow-y: auto; height: 100%; position: relative; }' +
             '.home-tv-card { display: flex; align-items: center; margin-bottom: 10px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; cursor: pointer; border-left: 5px solid #f39c12; }' +
             '.home-tv-card.focus { background: #f39c12; color: #000; transform: scale(1.02); }' +
             '.home-tv-card__icon { width: 60px; height: 40px; margin-right: 15px; background-size: contain; background-repeat: no-repeat; background-position: center; flex-shrink: 0; }' +
@@ -12,12 +14,9 @@
         '</style>').appendTo('body');
     }
 
-    // 2. Компонент
     Lampa.Component.add('home_tv_plugin', function (object, exam) {
-        var scroll = new Lampa.Scroll({mask: true, over: true});
         var html   = $('<div class="home-tv-list"></div>');
-        var inner  = $('<div></div>');
-        var last_focus; // Переменная для запоминания последней активной карточки
+        var last_focus;
         
         var channels = [
             { title: 'Россия 1', url: 'https://raw.githubusercontent.com/iptv-org/iptv/refs/heads/master/streams/ru_televizor24.m3u', img: 'https://iptvx.one/picons/rossia-1.png' },
@@ -43,7 +42,7 @@
         };
 
         this.create = function () {
-            inner.empty();
+            html.empty();
 
             channels.forEach(function (channel) {
                 var card = $('<div class="home-tv-card selector">' +
@@ -51,10 +50,9 @@
                     '<div class="home-tv-card__title">' + channel.title + '</div>' +
                 '</div>');
 
-                // Обновление скролла при наведении и сохранение фокуса
                 card.on('hover:focus', function (e) {
-                    last_focus = card; // Запоминаем текущую карточку
-                    scroll.update(card); 
+                    last_focus = card;
+                    card[0].scrollIntoView({ block: 'nearest' });
                 });
 
                 card.on('hover:enter', function () {
@@ -102,65 +100,56 @@
                     });
                 });
 
-                inner.append(card);
+                html.append(card);
             });
-
-            scroll.append(inner);
-            html.append(scroll.render(true));
-            
-            return this.render();
         };
 
-        // Метод, отвечающий за привязку пульта к плагину
-        this.active = function () {
+        this.start = function () {
             Lampa.Controller.add('home_tv_ctrl', {
-                toggle: function () { 
-                    // Находим все элементы с классом .selector внутри нашего контейнера
-                    var selecters = html.find('.selector');
-                    
-                    // Передаем коллекцию селекторов контроллеру Lampa
-                    Lampa.Controller.collectionSet(html); 
-                    
-                    // Фокусируемся либо на последнем запомненном элементе, либо на самом первом
-                    Lampa.Controller.collectionFocus(last_focus && last_focus.length ? last_focus[0] : selecters[0], html); 
+                left: function () {
+                    if (window.Navigator && window.Navigator.canmove('left')) window.Navigator.move('left');
+                    else Lampa.Controller.toggle('menu');
                 },
-                up: function () { 
-                    Lampa.Controller.move('up'); 
+                up: function () {
+                    if (window.Navigator && window.Navigator.canmove('up')) window.Navigator.move('up');
                 },
-                down: function () { 
-                    Lampa.Controller.move('down'); 
+                down: function () {
+                    if (window.Navigator && window.Navigator.canmove('down')) window.Navigator.move('down');
                 },
-                back: function () { 
-                    Lampa.Activity.backward(); 
+                back: function () { Lampa.Activity.backward(); }
+            });
+            Lampa.Controller.add('content', {
+                invisible: true,
+                toggle: function () {
+                    Lampa.Controller.toggle('home_tv_ctrl');
+                    Lampa.Controller.collectionSet(html);
+                    var target = last_focus && last_focus.length ? last_focus[0] : html.find('.selector')[0];
+                    Lampa.Controller.collectionFocus(target, html);
                 }
             });
-            
-            // Включаем созданный контроллер
             Lampa.Controller.toggle('home_tv_ctrl');
+            Lampa.Controller.collectionSet(html);
+            Lampa.Controller.collectionFocus(html.find('.selector')[0], html);
         };
 
-        // Обязательный метод для очистки памяти и уничтожения контроллера при выходе
         this.destroy = function () {
-            scroll.destroy();
+            Lampa.Controller.remove('home_tv_ctrl');
             html.remove();
-            inner.remove();
         };
-
-        this.create();
     });
 
     function addPlugin() {
-        if ($('.menu__item[data-action="home_tv"]').length > 0) return;
+        $('.menu__item[data-action="home_tv"]').remove();
         var menu_item = $('<li class="menu__item selector" data-action="home_tv">' +
-            '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="#f39c12"/></svg></div>' +
+            '<div class="menu__ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z" fill="currentColor"/></svg></div>' +
             '<div class="menu__text">HOME TV</div>' +
             '</li>');
         
         menu_item.on('hover:enter click', function () {
-            Lampa.Activity.push({ title: 'HOME TV', component: 'home_tv_plugin', page: 1 });
+            Lampa.Activity.push({ url: '', title: 'HOME TV', component: 'home_tv_plugin' });
         });
         
-        $('.menu .menu__list').append(menu_item);
+        $('.menu .menu__list').eq(0).append(menu_item);
     }
 
     Lampa.Listener.follow('app', function (e) { 
